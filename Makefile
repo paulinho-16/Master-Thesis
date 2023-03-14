@@ -1,0 +1,20 @@
+SHELL := /bin/bash
+
+# Get the variable from a given section in the `config.ini` file
+SUMO_PATH := $(shell powershell.exe -Command "Get-Content config.ini | ForEach-Object { if ($$_ -match '\[dir\]') { $$section = $$true } elseif ($$section -and $$_ -match '^SUMO=([^;]+)') { $$matches[1].Trim() } }")
+
+# Replace all occurrences of "/" with "\"
+SUMO_PATH := $(subst /,\,$(SUMO_PATH))
+
+CALIBRATORS_FILE = $(SUMO_PATH)\calibrators.add.xml
+
+.PHONY: all
+
+all: prepare
+
+prepare:
+	@python -m src.calibrators
+
+clean:
+	@PowerShell -Command "Write-Output 'Removing files...'"
+	del $(CALIBRATORS_FILE)
