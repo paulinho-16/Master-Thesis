@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-15 12:43:46 by Eclipse SUMO netedit Version 1.15.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Shapes -->
+    <poi id="poi_0" type="x1" color="yellow" layer="202.00" x="10303.67" y="11219.14"/>
+    <poi id="poi_1" type="x3" color="128,128,0" layer="202.00" x="10258.99" y="11187.32"/>
+    <poi id="poi_10" type="x11" color="0,0,128" layer="202.00" x="10070.23" y="11406.44"/>
+    <poi id="poi_11" type="x12" color="blue" layer="202.00" x="10060.20" y="11326.50"/>
+    <poi id="poi_12" type="m1" color="red" layer="202.00" name="Tinha saída naquela junction" x="10080.55" y="11273.05"/>
+    <poi id="poi_13" type="x14" color="128,0,128" layer="202.00" x="10096.39" y="11364.46"/>
+    <poi id="poi_14" type="x13" color="128,0,128" layer="202.00" x="10063.24" y="11359.65"/>
+    <poi id="poi_15" type="x15" color="0,0,128" layer="202.00" x="10111.32" y="11349.78"/>
+    <poi id="poi_17" type="x16" color="128,0,128" layer="202.00" x="10195.08" y="11251.85"/>
+    <poi id="poi_18" type="x17" color="128,0,128" layer="202.00" x="10183.95" y="11355.35"/>
+    <poi id="poi_2" type="x2" color="yellow" layer="202.00" x="10048.03" y="11517.73"/>
+    <poi id="poi_3" type="q5" color="cyan" layer="202.00" x="10151.63" y="11399.40"/>
+    <poi id="poi_4" type="x4" color="128,128,0" layer="202.00" x="10088.72" y="11683.72"/>
+    <poi id="poi_5" type="x6" color="cyan" layer="202.00" x="10213.62" y="11332.99"/>
+    <poi id="poi_6" type="x7" color="cyan" layer="202.00" x="10139.33" y="11292.29"/>
+    <poi id="poi_7" type="x10" color="0,0,128" layer="202.00" x="10114.65" y="11541.30"/>
+    <poi id="poi_8" type="x8" color="cyan" layer="202.00" x="10173.55" y="11296.27"/>
+    <poi id="poi_9" type="x9" color="blue" layer="202.00" x="10186.84" y="11421.11"/>
+</additional>
