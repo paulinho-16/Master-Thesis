@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-16 14:18:40 by Eclipse SUMO netedit Version 1.15.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Shapes -->
+    <poi id="poi_0" type="x1" color="yellow" layer="202.00" x="4698.69" y="12578.54"/>
+    <poi id="poi_1" type="x2" color="yellow" layer="202.00" x="4555.20" y="12520.21"/>
+    <poi id="poi_2" type="x3" color="yellow" layer="202.00" x="4537.77" y="12140.24"/>
+    <poi id="poi_3" type="x4" color="128,128,0" layer="202.00" x="4734.67" y="12557.40"/>
+    <poi id="poi_4" type="x5" color="128,128,0" layer="202.00" x="4603.71" y="12530.24"/>
+    <poi id="poi_5" type="x6" color="128,128,0" layer="202.00" x="4487.00" y="12237.35"/>
+    <poi id="poi_6" type="x7" color="cyan" layer="202.00" x="4605.69" y="12504.83"/>
+</additional>
