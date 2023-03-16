@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-16 10:31:56 by Eclipse SUMO netedit Version 1.15.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Shapes -->
+    <poi id="poi_0" type="q1" color="yellow" layer="202.00" x="8637.81" y="13330.35"/>
+    <poi id="poi_1" type="x8" color="128,128,0" layer="202.00" x="8100.06" y="13228.88"/>
+    <poi id="poi_10" type="x11" color="cyan" layer="202.00" x="8427.33" y="13367.68"/>
+    <poi id="poi_11" type="x13" color="cyan" layer="202.00" x="8113.57" y="13492.58"/>
+    <poi id="poi_12" type="x12" color="cyan" layer="202.00" x="8175.86" y="13468.06"/>
+    <poi id="poi_13" type="x14" color="cyan" layer="202.00" x="8120.05" y="13378.21"/>
+    <poi id="poi_14" type="x15" color="cyan" layer="202.00" x="8097.98" y="13351.06"/>
+    <poi id="poi_15" type="x16" color="cyan" layer="202.00" x="8217.88" y="13232.64"/>
+    <poi id="poi_16" type="x17" color="cyan" layer="202.00" x="8264.13" y="13260.58"/>
+    <poi id="poi_17" type="x18" color="blue" layer="202.00" x="8309.61" y="13401.75"/>
+    <poi id="poi_18" type="x19" color="blue" layer="202.00" x="8316.87" y="13439.09"/>
+    <poi id="poi_19" type="x21" color="blue" layer="202.00" x="8210.90" y="13413.05"/>
+    <poi id="poi_2" type="x2" color="yellow" layer="202.00" x="8140.98" y="13550.94"/>
+    <poi id="poi_20" type="x20" color="blue" layer="202.00" x="8179.97" y="13406.79"/>
+    <poi id="poi_21" type="x22" color="blue" layer="202.00" x="8182.20" y="13292.40"/>
+    <poi id="poi_22" type="x23" color="0,0,128" layer="202.00" x="8261.35" y="13377.14"/>
+    <poi id="poi_23" type="x26" color="0,0,128" layer="202.00" x="8268.37" y="13312.68"/>
+    <poi id="poi_24" type="x24" color="0,0,128" layer="202.00" x="8159.51" y="13343.24"/>
+    <poi id="poi_25" type="x25" color="0,0,128" layer="202.00" x="8198.37" y="13314.46"/>
+    <poi id="poi_26" type="x27" color="0,0,128" layer="202.00" x="8208.33" y="13274.36"/>
+    <poi id="poi_27" type="x29" color="128,0,128" layer="202.00" x="8279.54" y="13425.93"/>
+    <poi id="poi_28" type="x28" color="128,0,128" layer="202.00" x="8261.46" y="13432.33"/>
+    <poi id="poi_29" type="x30" color="0,0,128" layer="202.00" x="8218.90" y="13495.71"/>
+    <poi id="poi_3" type="x3" color="yellow" layer="202.00" x="7927.64" y="13534.67"/>
+    <poi id="poi_30" type="m1" color="red" layer="202.00" name="Nesta via pode entrar nas outras duas? Complica os fluxos" x="8177.62" y="13514.95"/>
+    <poi id="poi_31" type="x31" color="0,0,128" layer="202.00" x="8215.05" y="13285.00"/>
+    <poi id="poi_32" type="x32" color="blue" layer="202.00" x="8337.86" y="13304.08"/>
+    <poi id="poi_4" type="x4" color="yellow" layer="202.00" x="8149.92" y="13110.25"/>
+    <poi id="poi_5" type="x5" color="128,128,0" layer="202.00" x="8714.40" y="13280.87"/>
+    <poi id="poi_6" type="x6" color="128,128,0" layer="202.00" x="8161.34" y="13556.48"/>
+    <poi id="poi_7" type="q7" color="128,128,0" layer="202.00" x="7936.19" y="13580.83"/>
+    <poi id="poi_8" type="x9" color="128,128,0" layer="202.00" x="8130.74" y="13133.41"/>
+    <poi id="poi_9" type="x10" color="cyan" layer="202.00" x="8425.65" y="13333.87"/>
+</additional>
