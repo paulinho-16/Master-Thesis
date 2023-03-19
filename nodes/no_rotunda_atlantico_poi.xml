@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-19 14:16:28 by Eclipse SUMO netedit Version 1.15.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Shapes -->
+    <poi id="poi_0" type="x1" color="yellow" layer="202.00" x="8572.37" y="8458.58"/>
+    <poi id="poi_1" type="x2" color="yellow" layer="202.00" x="8319.61" y="8463.12"/>
+    <poi id="poi_10" type="x11" color="128,128,0" layer="202.00" x="7933.15" y="8111.94"/>
+    <poi id="poi_11" type="x12" color="128,128,0" layer="202.00" x="8299.00" y="8277.96"/>
+    <poi id="poi_12" type="x13" color="cyan" layer="202.00" x="8436.23" y="8411.16"/>
+    <poi id="poi_13" type="x14" color="cyan" layer="202.00" x="8443.07" y="8393.85"/>
+    <poi id="poi_14" type="x15" color="cyan" layer="202.00" x="8000.67" y="8160.33"/>
+    <poi id="poi_15" type="x16" color="cyan" layer="202.00" x="8333.58" y="8330.28"/>
+    <poi id="poi_16" type="x17" color="cyan" layer="202.00" x="8381.68" y="8346.16"/>
+    <poi id="poi_17" type="x19" color="cyan" layer="202.00" x="8387.58" y="8331.95"/>
+    <poi id="poi_18" type="x18" color="blue" layer="202.00" x="8424.76" y="8371.01"/>
+    <poi id="poi_19" type="q20" color="cyan" layer="202.00" x="8426.06" y="8346.67"/>
+    <poi id="poi_2" type="x3" color="yellow" layer="202.00" x="7908.04" y="8147.67"/>
+    <poi id="poi_20" type="x21" color="blue" layer="202.00" x="8371.46" y="8397.76"/>
+    <poi id="poi_21" type="x22" color="blue" layer="202.00" x="8343.58" y="8446.89"/>
+    <poi id="poi_22" type="x24" color="blue" layer="202.00" x="7990.82" y="8180.01"/>
+    <poi id="poi_23" type="x23" color="blue" layer="202.00" x="8295.02" y="8347.95"/>
+    <poi id="poi_24" type="x25" color="blue" layer="202.00" x="8312.88" y="8351.72"/>
+    <poi id="poi_25" type="x26" color="0,0,128" layer="202.00" x="8331.63" y="8394.91"/>
+    <poi id="poi_26" type="x27" color="0,0,128" layer="202.00" x="8328.26" y="8384.11"/>
+    <poi id="poi_27" type="x28" color="0,0,128" layer="202.00" x="8321.05" y="8367.75"/>
+    <poi id="poi_28" type="x29" color="cyan" layer="202.00" x="8261.57" y="8352.04"/>
+    <poi id="poi_3" type="x4" color="yellow" layer="202.00" x="7785.30" y="8036.35"/>
+    <poi id="poi_4" type="x5" color="yellow" layer="202.00" x="8079.72" y="8193.41"/>
+    <poi id="poi_5" type="x6" color="yellow" layer="202.00" x="8328.06" y="8293.72"/>
+    <poi id="poi_6" type="x8" color="128,128,0" layer="202.00" x="8347.99" y="8504.97"/>
+    <poi id="poi_7" type="x7" color="128,128,0" layer="202.00" x="8577.53" y="8425.69"/>
+    <poi id="poi_8" type="x9" color="128,128,0" layer="202.00" x="8049.03" y="8220.46"/>
+    <poi id="poi_9" type="x10" color="128,128,0" layer="202.00" x="7768.20" y="8066.67"/>
+</additional>
