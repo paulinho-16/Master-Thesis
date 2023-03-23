@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-16 15:32:24 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-03-23 12:27:04 by Eclipse SUMO netedit Version 1.15.0
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
@@ -21,12 +21,10 @@
     <poi id="poi_20" type="x21" color="blue" layer="202.00" x="4464.64" y="12189.74"/>
     <poi id="poi_21" type="x23" color="blue" layer="202.00" x="4528.88" y="11947.56"/>
     <poi id="poi_22" type="x22" color="blue" layer="202.00" x="4466.67" y="11951.59"/>
-    <poi id="poi_23" type="x24" color="0,0,128" layer="202.00" x="4482.79" y="11844.05"/>
-    <poi id="poi_24" type="m1" color="red" layer="202.00" name="O que fazer nestes casos em que há dois sentidos?" x="4519.90" y="11831.07"/>
-    <poi id="poi_25" type="x25" color="blue" layer="202.00" x="4608.88" y="11914.52"/>
-    <poi id="poi_26" type="x26" color="0,0,128" layer="202.00" x="4609.76" y="12158.55"/>
-    <poi id="poi_27" type="x27" color="0,0,128" layer="202.00" x="4650.79" y="12061.17"/>
-    <poi id="poi_29" type="x28" color="blue" layer="202.00" x="4608.12" y="12015.21"/>
+    <poi id="poi_25" type="x24" color="blue" layer="202.00" x="4608.88" y="11914.52"/>
+    <poi id="poi_26" type="x25" color="0,0,128" layer="202.00" x="4609.76" y="12158.55"/>
+    <poi id="poi_27" type="x26" color="0,0,128" layer="202.00" x="4650.79" y="12061.17"/>
+    <poi id="poi_29" type="x27" color="blue" layer="202.00" x="4608.12" y="12015.21"/>
     <poi id="poi_3" type="x13" color="cyan" layer="202.00" x="4418.23" y="12048.85"/>
     <poi id="poi_4" type="x14" color="cyan" layer="202.00" x="4527.11" y="11921.03"/>
     <poi id="poi_5" type="x16" color="cyan" layer="202.00" x="4638.15" y="11969.22"/>
