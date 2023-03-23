@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-17 18:45:51 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-03-23 14:55:53 by Eclipse SUMO netedit Version 1.15.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="C:\Users\Paulinho\Desktop\Master-Thesis\sumo\vci.net.xml.gz"/>
+        <sumo-net-file value="C:\Users\Paulinho\Desktop\Master-Thesis\nodes\no_devesas.net.xml"/>
     </input>
 
     <output>
@@ -39,7 +39,7 @@
 
 <net version="1.9" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
 
-    <location netOffset="-524914.43,-4544541.91" convBoundary="5464.84,8272.74,5753.71,8660.11" origBoundary="-8.702913,41.051318,-8.236192,41.279522" projParameter="+proj=utm +zone=29 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"/>
+    <location netOffset="-524914.43,-4544541.91" convBoundary="5565.96,8272.74,5753.71,8660.11" origBoundary="-8.702913,41.051318,-8.236192,41.279522" projParameter="+proj=utm +zone=29 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"/>
 
     <type id="highway.bridleway" priority="1" numLanes="1" speed="2.78" allow="pedestrian" oneway="1" width="2.00"/>
     <type id="highway.bus_guideway" priority="1" numLanes="1" speed="27.78" allow="bus" oneway="1"/>
@@ -83,12 +83,6 @@
         <lane id=":1145510972_1_1" index="1" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="25.00" length="4.47" shape="5669.37,8385.79 5669.43,8390.26"/>
         <lane id=":1145510972_1_2" index="2" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="25.00" length="4.47" shape="5666.18,8385.96 5666.24,8389.45"/>
     </edge>
-    <edge id=":1838975439_0" function="internal">
-        <lane id=":1838975439_0_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="0.43" shape="5566.88,8474.32 5566.75,8474.32 5566.66,8474.31 5566.58,8474.31 5566.45,8474.32"/>
-    </edge>
-    <edge id=":1838975439_1" function="internal">
-        <lane id=":1838975439_1_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="0.24" shape="5566.11,8471.14 5566.35,8471.10"/>
-    </edge>
     <edge id=":1838975461_0" function="internal">
         <lane id=":1838975461_0_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="23.61" length="3.91" shape="5651.54,8562.07 5651.50,8560.90 5651.50,8560.11 5651.54,8559.32 5651.62,8558.16"/>
     </edge>
@@ -114,13 +108,8 @@
         <lane id=":685214568_3_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="23.61" length="3.12" shape="5645.55,8390.24 5645.37,8389.33 5645.25,8388.70 5645.18,8388.07 5645.14,8387.15"/>
     </edge>
 
-    <edge id="-54509444" from="1838975439" to="2642432194" name="Nó das Devesas" priority="9" type="highway.motorway_link" shape="5566.28,8472.73 5549.96,8474.47 5528.47,8474.49 5506.24,8467.19 5491.28,8455.32 5483.61,8438.13 5475.11,8409.64 5474.29,8406.88 5471.49,8403.96 5464.84,8400.13">
-        <lane id="-54509444_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="144.56" shape="5566.45,8474.32 5550.05,8476.07 5528.21,8476.09 5505.47,8468.62 5489.98,8456.33 5482.11,8438.69 5473.58,8410.10 5472.87,8407.71 5470.49,8405.23 5464.04,8401.52">
-            <param key="origId" value="54509444"/>
-        </lane>
-    </edge>
-    <edge id="173072184" from="1838975439" to="685214568" name="Nó das Devesas" priority="9" type="highway.motorway_link" spreadType="center" shape="5565.96,8471.16 5606.94,8464.42 5623.76,8458.25 5637.28,8442.51 5641.45,8434.81 5645.62,8423.80 5649.01,8408.80 5645.18,8388.27">
-        <lane id="173072184_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="134.59" shape="5566.35,8471.10 5606.94,8464.42 5623.76,8458.25 5637.28,8442.51 5641.45,8434.81 5645.62,8423.80 5649.01,8408.80 5645.55,8390.24">
+    <edge id="173072184" from="J0" to="685214568" name="Nó das Devesas" priority="9" type="highway.motorway_link" spreadType="center" shape="5565.96,8468.05 5606.94,8464.42 5623.76,8458.25 5637.28,8442.51 5641.45,8434.81 5645.62,8423.80 5649.01,8408.80 5645.18,8388.27">
+        <lane id="173072184_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="134.60" shape="5565.96,8468.05 5606.94,8464.42 5623.76,8458.25 5637.28,8442.51 5641.45,8434.81 5645.62,8423.80 5649.01,8408.80 5645.55,8390.24">
             <param key="origId" value="173072184"/>
         </lane>
     </edge>
@@ -166,14 +155,9 @@
         </lane>
         <param key="origFrom" value="1838975441"/>
     </edge>
-    <edge id="54509443" from="1838975461" to="1838975439" name="Nó das Devesas" priority="9" type="highway.motorway_link" spreadType="center" shape="5651.46,8560.48 5653.35,8533.46 5647.61,8507.34 5636.87,8490.25 5621.86,8479.13 5606.32,8473.97 5566.23,8474.33">
-        <lane id="54509443_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="146.18" shape="5651.62,8558.16 5653.35,8533.46 5647.61,8507.34 5636.87,8490.25 5621.86,8479.13 5606.32,8473.97 5566.88,8474.32">
+    <edge id="54509443" from="1838975461" to="J1" name="Nó das Devesas" priority="9" type="highway.motorway_link" spreadType="center" shape="5651.46,8560.48 5653.35,8533.46 5647.61,8507.34 5636.87,8490.25 5621.86,8479.13 5606.32,8473.97 5566.23,8475.89">
+        <lane id="54509443_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="146.88" shape="5651.62,8558.16 5653.35,8533.46 5647.61,8507.34 5636.87,8490.25 5621.86,8479.13 5606.32,8473.97 5566.23,8475.89">
             <param key="origId" value="54509443"/>
-        </lane>
-    </edge>
-    <edge id="54509444" from="2642432194" to="1838975439" name="Nó das Devesas" priority="9" type="highway.motorway_link" shape="5464.84,8400.13 5471.49,8403.96 5474.29,8406.88 5475.11,8409.64 5483.61,8438.13 5491.28,8455.32 5506.24,8467.19 5528.47,8474.49 5549.96,8474.47 5566.28,8472.73">
-        <lane id="54509444_0" index="0" allow="private emergency authority army vip passenger hov taxi bus coach delivery truck trailer motorcycle evehicle custom1 custom2" speed="22.22" length="142.54" shape="5465.64,8398.74 5472.49,8402.69 5475.71,8406.05 5476.64,8409.18 5485.11,8437.57 5492.58,8454.31 5507.01,8465.76 5528.73,8472.89 5549.87,8472.87 5566.11,8471.14">
-            <param key="origId" value="54509444"/>
         </lane>
     </edge>
     <edge id="597084093" from="685214568" to="1146570357" name="Via de Cintura Interna" priority="14" type="highway.motorway" spreadType="center" shape="5649.97,8388.15 5647.24,8272.78">
@@ -239,10 +223,6 @@
     </junction>
     <junction id="1146570357" type="dead_end" x="5648.84" y="8272.74" incLanes="597084093_0 597084093_1 597084093_2 597084093_3" intLanes="" shape="5640.84,8272.93 5653.64,8272.63"/>
     <junction id="1838975437" type="dead_end" x="5743.50" y="8467.43" incLanes="54375651#0_0" intLanes="" shape="5743.25,8465.85 5743.75,8469.01"/>
-    <junction id="1838975439" type="priority" x="5566.28" y="8472.73" incLanes="54509443_0 54509444_0" intLanes=":1838975439_0_0 :1838975439_1_0" shape="5567.14,8475.92 5566.09,8469.52 5565.92,8469.55 5566.60,8475.91 5566.80,8475.90 5567.02,8475.92">
-        <request index="0" response="00" foes="00" cont="0"/>
-        <request index="1" response="00" foes="00" cont="0"/>
-    </junction>
     <junction id="1838975441" type="dead_end" x="5753.71" y="8480.40" incLanes="" intLanes="" shape="5754.02,8478.83 5753.40,8481.97"/>
     <junction id="1838975461" type="priority" x="5657.85" y="8560.16" incLanes="461172813-AddedOffRampEdge_0 461172813-AddedOffRampEdge_1 461172813-AddedOffRampEdge_2 461172813-AddedOffRampEdge_3" intLanes=":1838975461_0_0 :1838975461_1_0 :1838975461_1_1 :1838975461_1_2" shape="5649.95,8562.14 5662.73,8561.51 5662.64,8558.93 5650.03,8558.04 5649.92,8559.56 5649.89,8560.09 5649.89,8560.63 5649.91,8561.27">
         <request index="0" response="0000" foes="0000" cont="0"/>
@@ -256,7 +236,6 @@
         <request index="2" response="0000" foes="0000" cont="0"/>
         <request index="3" response="0000" foes="0000" cont="0"/>
     </junction>
-    <junction id="2642432194" type="dead_end" x="5464.84" y="8400.13" incLanes="-54509444_0" intLanes="" shape="5464.84,8400.13 5463.24,8402.90 5464.84,8400.13"/>
     <junction id="461172813-AddedOffRampNode" type="dead_end" x="5662.82" y="8660.03" incLanes="" intLanes="" shape="5667.61,8659.79 5654.83,8660.43"/>
     <junction id="461173094-AddedOffRampNode" type="dead_end" x="5665.98" y="8312.88" incLanes="" intLanes="" shape="5661.18,8313.04 5673.98,8312.62"/>
     <junction id="685214568" type="priority" x="5651.57" y="8388.11" incLanes="597084094_0 597084094_1 597084094_2 173072184_0" intLanes=":685214568_0_0 :685214568_0_1 :685214568_0_2 :685214568_3_0" shape="5643.94,8390.35 5656.48,8389.48 5656.34,8386.88 5643.55,8387.19 5643.60,8388.37 5643.65,8388.78 5643.72,8389.19">
@@ -266,6 +245,8 @@
         <request index="3" response="0000" foes="0000" cont="0"/>
     </junction>
     <junction id="95367763#1-AddedOnRampNode" type="dead_end" x="5675.71" y="8650.75" incLanes="95367763#1-AddedOnRampEdge_0 95367763#1-AddedOnRampEdge_1 95367763#1-AddedOnRampEdge_2 95367763#1-AddedOnRampEdge_3" intLanes="" shape="5683.71,8650.56 5670.91,8650.86"/>
+    <junction id="J0" type="dead_end" x="5565.96" y="8468.05" incLanes="" intLanes="" shape="5566.10,8469.64 5565.82,8466.46"/>
+    <junction id="J1" type="dead_end" x="5566.23" y="8475.89" incLanes="54509443_0" intLanes="" shape="5566.31,8477.49 5566.15,8474.29"/>
 
     <connection from="173072184" to="597084093" fromLane="0" toLane="0" via=":685214568_3_0" dir="s" state="M"/>
     <connection from="461172813-AddedOffRampEdge" to="54509443" fromLane="0" toLane="0" via=":1838975461_0_0" dir="s" state="M"/>
@@ -277,8 +258,6 @@
     <connection from="461173094-AddedOffRampEdge" to="95367763#0" fromLane="2" toLane="1" via=":1145510972_1_1" dir="s" state="M"/>
     <connection from="461173094-AddedOffRampEdge" to="95367763#0" fromLane="3" toLane="2" via=":1145510972_1_2" dir="s" state="M"/>
     <connection from="54375654" to="95367763#1-AddedOnRampEdge" fromLane="0" toLane="0" via=":1838975466_3_0" dir="s" state="M"/>
-    <connection from="54509443" to="-54509444" fromLane="0" toLane="0" via=":1838975439_0_0" dir="s" state="M"/>
-    <connection from="54509444" to="173072184" fromLane="0" toLane="0" via=":1838975439_1_0" dir="s" state="M"/>
     <connection from="597084094" to="597084093" fromLane="0" toLane="1" via=":685214568_0_0" dir="s" state="M"/>
     <connection from="597084094" to="597084093" fromLane="1" toLane="2" via=":685214568_0_1" dir="s" state="M"/>
     <connection from="597084094" to="597084093" fromLane="2" toLane="3" via=":685214568_0_2" dir="s" state="M"/>
@@ -290,8 +269,6 @@
     <connection from=":1145510972_1" to="95367763#0" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":1145510972_1" to="95367763#0" fromLane="1" toLane="1" dir="s" state="M"/>
     <connection from=":1145510972_1" to="95367763#0" fromLane="2" toLane="2" dir="s" state="M"/>
-    <connection from=":1838975439_0" to="-54509444" fromLane="0" toLane="0" dir="s" state="M"/>
-    <connection from=":1838975439_1" to="173072184" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":1838975461_0" to="54509443" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":1838975461_1" to="597084094" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":1838975461_1" to="597084094" fromLane="1" toLane="1" dir="s" state="M"/>
@@ -304,6 +281,5 @@
     <connection from=":685214568_0" to="597084093" fromLane="1" toLane="2" dir="s" state="M"/>
     <connection from=":685214568_0" to="597084093" fromLane="2" toLane="3" dir="s" state="M"/>
     <connection from=":685214568_3" to="597084093" fromLane="0" toLane="0" dir="s" state="M"/>
-
 
 </net>
