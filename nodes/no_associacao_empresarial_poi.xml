@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-16 14:01:47 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-03-23 11:39:05 by Eclipse SUMO netedit Version 1.15.0
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
@@ -25,7 +25,7 @@
     <poi id="poi_24" type="x25" color="blue" layer="202.00" x="5108.31" y="12684.58"/>
     <poi id="poi_25" type="x26" color="blue" layer="202.00" x="5206.85" y="12850.06"/>
     <poi id="poi_26" type="x27" color="blue" layer="202.00" x="5204.64" y="12737.49"/>
-    <poi id="poi_27" type="x29" color="cyan" layer="202.00" x="5043.96" y="12901.33"/>
+    <poi id="poi_27" type="x39" color="cyan" layer="202.00" x="5043.96" y="12901.33"/>
     <poi id="poi_28" type="x28" color="blue" layer="202.00" x="5181.65" y="12777.22"/>
     <poi id="poi_29" type="x29" color="0,0,128" layer="202.00" x="5095.12" y="12879.64"/>
     <poi id="poi_3" type="x4" color="yellow" layer="202.00" x="5332.94" y="12602.14"/>
