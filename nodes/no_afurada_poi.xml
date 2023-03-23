@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-17 17:20:59 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-03-23 14:43:21 by Eclipse SUMO netedit Version 1.15.0
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
@@ -22,7 +22,6 @@
     <poi id="poi_21" type="x22" color="128,0,128" layer="202.00" x="5220.59" y="10376.44"/>
     <poi id="poi_22" type="x23" color="blue" layer="202.00" x="5407.77" y="10387.49"/>
     <poi id="poi_23" type="x24" color="0,0,128" layer="202.00" x="5481.44" y="10272.36"/>
-    <poi id="poi_24" type="m1" color="red" layer="202.00" name="Que confusão é esta?" x="5374.06" y="10402.05"/>
     <poi id="poi_25" type="x25" color="blue" layer="202.00" x="5378.31" y="10236.26"/>
     <poi id="poi_3" type="x8" color="128,128,0" layer="202.00" x="5147.60" y="10273.44"/>
     <poi id="poi_4" type="x3" color="yellow" layer="202.00" x="5207.36" y="10078.92"/>
