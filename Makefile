@@ -15,6 +15,9 @@ all: prepare
 prepare:
 	@python -m src.calibrators
 
+solve:
+	@python -m src.solver
+
 clean:
 	@PowerShell -Command "Write-Output 'Removing files...'"
 	del $(CALIBRATORS_FILE)
