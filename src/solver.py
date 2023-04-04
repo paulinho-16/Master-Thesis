@@ -1,3 +1,9 @@
+"""Equation System Solver
+
+This script reads the equations of the VCI nodes from the file `equations.md`, presenting the free variables of each equation system.
+
+"""
+
 import sympy
 
 from .utils import load_config, remove_chars
@@ -13,6 +19,7 @@ def highest_variable(equations):
                     highest = num
     
     return highest
+
 
 if __name__ == '__main__':
     config = load_config()

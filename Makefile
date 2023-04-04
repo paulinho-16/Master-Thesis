@@ -18,6 +18,9 @@ prepare:
 solve:
 	@python -m src.solver
 
+run:
+	@python -m src.digital_twin
+
 clean:
 	@PowerShell -Command "Write-Output 'Removing files...'"
 	del $(CALIBRATORS_FILE)

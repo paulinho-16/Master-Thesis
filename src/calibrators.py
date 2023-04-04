@@ -7,6 +7,7 @@ This script reads the location of the detectors from a spreadsheet and creates t
 import sumolib
 import operator
 import pandas as pd
+from pathlib import Path
 import xml.etree.cElementTree as ET
 
 from .utils import load_config, remove_chars
@@ -37,19 +38,19 @@ def write_xml(body):
 def gen_calibrators(df, network):
     radius = 50
 
-    additional_tag = ET.Element("additional")
+    additional_tag = ET.Element('additional')
 
     for i, coords in enumerate(df['coordenadas'].values):
         x, y = convert_coords_to_SUMO(network, coords)
         try:
             edge_id = get_closest_edge(network, x, y, radius)
         except Exception:
-            print(f'No edges found within radius for the coordinates {coords}!')
+            print(f"No edges found within radius for the coordinates {coords}!")
 
-        # TODO: Apparently the `output` attribute only accepts directories now, check if it works
-        # ET.SubElement(additional_tag, "calibrator", id=f'calib_{i+1}', edge=edge_id, pos='30', output=f"{config.get('dir', 'OUTPUT', fallback='../output')}/calibrator_{i+1}.xml")
+        output_dir = config.get('dir', 'OUTPUT', fallback='./output')
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
         # TODO: Instead of a fixed pos, look for the closest node to the detector
-        ET.SubElement(additional_tag, "calibrator", id=f'calib_{i+1}', edge=edge_id, pos='20', output=f"{config.get('dir', 'OUTPUT', fallback='./output')}")
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_{i+1}', edge=edge_id, pos='20', output=f'{output_dir}/calibrator_{i+1}.xml')
 
     write_xml(additional_tag)
 
@@ -57,6 +58,6 @@ def gen_calibrators(df, network):
 if __name__ == '__main__':
     config = load_config()
     df = pd.read_excel(config.get('sensors', 'LOCATIONS', fallback='./data/sensor_locations.xlsx'))
-    network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml.gz'))
+    network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
 
     gen_calibrators(df, network)
