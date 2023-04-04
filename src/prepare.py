@@ -1,6 +1,7 @@
-"""Calibrators Generator
+"""Simulation Preparation
 
 This script reads the location of the detectors from a spreadsheet and creates the calibrator objects in those positions, generating the file `detectors.add.xml` in the `sumo` folder.
+It also prepares the simulation view, editing the file `vci.view.xml` in the `sumo` folder according to the parameters in the `config.ini` file.
 
 """
 
@@ -30,10 +31,10 @@ def get_closest_edge(network, x, y, radius):
     else:
         raise Exception()
 
-def write_xml(body):
+def write_xml(body, file):
     ET.indent(body, space='\t')
     tree = ET.ElementTree(body)
-    tree.write(config.get('sumo', 'CALIBRATORS', fallback='./sumo/calibrators.add.xml'))
+    tree.write(file)
 
 def gen_calibrators(df, network):
     radius = 50
@@ -52,8 +53,15 @@ def gen_calibrators(df, network):
         # TODO: Instead of a fixed pos, look for the closest node to the detector
         ET.SubElement(additional_tag, 'calibrator', id=f'calib_{i+1}', edge=edge_id, pos='20', output=f'{output_dir}/calibrator_{i+1}.xml')
 
-    write_xml(additional_tag)
+    write_xml(additional_tag, config.get('sumo', 'CALIBRATORS', fallback='./sumo/calibrators.add.xml'))
 
+def prepare_view():
+    view_file = config.get('sumo', 'VIEW', fallback='./sumo/vci.view.xml')
+    tree = ET.parse(view_file)
+    root = tree.getroot()
+    delay_elem = root.find('delay')
+    delay_elem.set('value', config.get('params', 'DELAY', fallback='20'))
+    write_xml(root, view_file)
 
 if __name__ == '__main__':
     config = load_config()
@@ -61,3 +69,4 @@ if __name__ == '__main__':
     network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
 
     gen_calibrators(df, network)
+    prepare_view()

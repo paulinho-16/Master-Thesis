@@ -1,6 +1,6 @@
 """Equation System Solver
 
-This script reads the equations of the VCI nodes from the file `equations.md`, presenting the free variables of each equation system.
+This script reads the equations of the VCI nodes from the file `equations.md` in the `docs` folder, presenting the free variables of each equation system.
 
 """
 

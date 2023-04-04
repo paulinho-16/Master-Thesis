@@ -10,10 +10,10 @@ CALIBRATORS_FILE = $(SUMO_PATH)\calibrators.add.xml
 
 .PHONY: all
 
-all: prepare
+all: prepare run
 
 prepare:
-	@python -m src.calibrators
+	@python -m src.prepare
 
 solve:
 	@python -m src.solver
