@@ -36,14 +36,14 @@ if __name__ == '__main__':
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
     time_sleep = int(config.get('params', 'TIME_SLEEP', fallback='0')) # slow down or speed up the simulation
 
+    step_length = float(config.get('params', 'STEP_LENGTH', fallback='0.25')) # seconds each step takes
+    total_steps = total_hours * 3600 * (1/step_length)
+
     while current_hour < total_hours:
         print(f"Running simulation for hour {current_hour + 1} of {total_hours}")
         traci.start(sumo_cmd)
-
         step = 0
-        step_length = float(config.get('params', 'STEP_LENGTH', fallback='0.25')) # seconds each step takes
-        total_steps = total_hours * 3600 * (1/step_length)
-        
+
         while step <= total_steps:
             traci.simulationStep()
 
