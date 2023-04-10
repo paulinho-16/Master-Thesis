@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <additional>
 	<calibrator id="calib_1" edge="447753518" pos="20" output="./output/calibrator_1.xml" />
 	<calibrator id="calib_2" edge="29036547" pos="20" output="./output/calibrator_2.xml" />

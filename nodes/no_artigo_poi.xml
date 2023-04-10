@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<additional>
+	<poi id="x1" color="yellow" layer="202.00" x="4486.86" y="2473.54" type="flow variable" name="E10.25" />
+	<poi id="x2" color="yellow" layer="202.00" x="4308.55" y="1965.325" type="flow variable" name="E11" />
+	<poi id="x3" color="yellow" layer="202.00" x="2963.1800000000003" y="5053.96" type="flow variable" name="ES_N56_onramp1.90" />
+	<poi id="x4" color="yellow" layer="202.00" x="4930.8949999999995" y="2257.505" type="flow variable" name="E_NS8" />
+	<poi id="x5" color="yellow" layer="202.00" x="2840.97" y="5579.63" type="flow variable" name="N_ES150" />
+	<poi id="x6" color="yellow" layer="202.00" x="3089.26" y="4761.52" type="flow variable" name="N_ES152_onramp1.89" />
+	<poi id="x7" color="yellow" layer="202.00" x="4419.4" y="1642.64" type="flow variable" name="S_NE13" />
+	<poi id="x8" color="128,128,0" layer="202.00" x="4422.63" y="1693.4" type="flow variable" name="EN_S1.136" />
+	<poi id="x9" color="128,128,0" layer="202.00" x="3110.86" y="4940.35" type="flow variable" name="ES_N11_offramp1" />
+	<poi id="x10" color="128,128,0" layer="202.00" x="2854.2200000000003" y="5579.67" type="flow variable" name="ES_N13" />
+	<poi id="x11" color="128,128,0" layer="202.00" x="2950.47" y="5150.22" type="flow variable" name="N_ES151_offramp1" />
+	<poi id="x12" color="128,128,0" layer="202.00" x="5108.6900000000005" y="2186.66" type="flow variable" name="SN_E2" />
+	<poi id="x13" color="cyan" layer="202.00" x="4491.09" y="2405.17" type="flow variable" name="EN1" />
+	<poi id="x14" color="cyan" layer="202.00" x="4589.77" y="2409.52" type="flow variable" name="ES2" />
+	<poi id="x15" color="cyan" layer="202.00" x="2930.74" y="5285.5599999999995" type="flow variable" name="N_ES151" />
+	<poi id="x16" color="cyan" layer="202.00" x="4488.24" y="1828.77" type="flow variable" name="SE1" />
+	<poi id="x17" color="cyan" layer="202.00" x="4460.54" y="1763.43" type="flow variable" name="SN1" />
+	<poi id="x18" color="cyan" layer="202.00" x="4318.475" y="2594.915" type="flow variable" name="EN2" />
+	<poi id="x19" color="cyan" layer="202.00" x="3139.23" y="4767.09" type="flow variable" name="N_ES153" />
+	<poi id="x20" color="cyan" layer="202.00" x="4644.389999999999" y="2334.0699999999997" type="flow variable" name="SE5" />
+	<poi id="x21" color="cyan" layer="202.00" x="4224.3125" y="2719.715" type="flow variable" name="ES_N1" />
+	<poi id="x22" color="cyan" layer="202.00" x="4269.11" y="2600.42" type="flow variable" name="NE1" />
+	<poi id="x23" color="cyan" layer="202.00" x="4224.71" y="2694.27" type="flow variable" name="NS1" />
+	<poi id="x24" color="cyan" layer="202.00" x="3085.6899999999996" y="4968.01" type="flow variable" name="ES_N11" />
+</additional>

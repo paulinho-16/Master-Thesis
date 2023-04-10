@@ -11,7 +11,7 @@ import pandas as pd
 from pathlib import Path
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, remove_chars
+from .utils import load_config, remove_chars, write_xml
 
 def convert_coords_to_SUMO(network, coords):
     coords = remove_chars(coords, '()')
@@ -30,11 +30,6 @@ def get_closest_edge(network, x, y, radius):
         return closestEdge.getID()
     else:
         raise Exception()
-
-def write_xml(body, file):
-    ET.indent(body, space='\t')
-    tree = ET.ElementTree(body)
-    tree.write(file)
 
 def gen_calibrators(df, network):
     radius = 50
