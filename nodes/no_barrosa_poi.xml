@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-18 16:50:53 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-04-11 15:36:20 by Eclipse SUMO netedit Version 1.15.0
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
     <!-- Shapes -->
-    <poi id="poi_0" type="x1" color="yellow" layer="202.00" x="7402.96" y="7919.27"/>
-    <poi id="poi_1" type="x2" color="yellow" layer="202.00" x="7119.10" y="7986.14"/>
-    <poi id="poi_10" type="x11" color="128,128,0" layer="202.00" x="6950.09" y="7709.91"/>
-    <poi id="poi_11" type="x12" color="128,128,0" layer="202.00" x="6965.03" y="7686.62"/>
-    <poi id="poi_12" type="x13" color="128,128,0" layer="202.00" x="6951.92" y="7780.93"/>
-    <poi id="poi_13" type="x14" color="cyan" layer="202.00" x="7164.52" y="7877.33"/>
-    <poi id="poi_14" type="x15" color="cyan" layer="202.00" x="7302.94" y="7909.42"/>
-    <poi id="poi_15" type="x16" color="cyan" layer="202.00" x="6848.62" y="7863.20"/>
-    <poi id="poi_16" type="x17" color="cyan" layer="202.00" x="6843.40" y="7707.64"/>
-    <poi id="poi_17" type="x18" color="cyan" layer="202.00" x="6830.86" y="7757.82"/>
-    <poi id="poi_18" type="x19" color="blue" layer="202.00" x="7236.83" y="7898.21"/>
-    <poi id="poi_19" type="x20" color="cyan" layer="202.00" x="7178.39" y="7893.82"/>
-    <poi id="poi_2" type="x3" color="yellow" layer="202.00" x="6833.56" y="8054.40"/>
-    <poi id="poi_20" type="x21" color="blue" layer="202.00" x="7107.88" y="7874.41"/>
-    <poi id="poi_21" type="x22" color="blue" layer="202.00" x="6969.62" y="7886.59"/>
-    <poi id="poi_22" type="x23" color="blue" layer="202.00" x="6870.85" y="7811.08"/>
-    <poi id="poi_3" type="x4" color="yellow" layer="202.00" x="6703.32" y="7635.48"/>
-    <poi id="poi_4" type="x5" color="yellow" layer="202.00" x="6888.78" y="7742.76"/>
-    <poi id="poi_5" type="x6" color="yellow" layer="202.00" x="6972.51" y="7796.04"/>
-    <poi id="poi_6" type="x7" color="128,128,0" layer="202.00" x="7319.39" y="7876.16"/>
-    <poi id="poi_7" type="x8" color="128,128,0" layer="202.00" x="7123.48" y="8002.21"/>
-    <poi id="poi_8" type="x9" color="128,128,0" layer="202.00" x="6886.50" y="8027.39"/>
-    <poi id="poi_9" type="x10" color="128,128,0" layer="202.00" x="6639.70" y="7618.71"/>
+    <poi id="x1" color="yellow" layer="202.00" x="7402.96" y="7919.27"/>
+    <poi id="x10" color="128,128,0" layer="202.00" x="6639.70" y="7618.71"/>
+    <poi id="x11" color="128,128,0" layer="202.00" x="6950.09" y="7709.91"/>
+    <poi id="x12" color="128,128,0" layer="202.00" x="6965.03" y="7686.62"/>
+    <poi id="x13" color="128,128,0" layer="202.00" x="6951.92" y="7780.93"/>
+    <poi id="x14" color="cyan" layer="202.00" x="7164.52" y="7877.33"/>
+    <poi id="x15" color="cyan" layer="202.00" x="7302.94" y="7909.42"/>
+    <poi id="x16" color="cyan" layer="202.00" x="6848.62" y="7863.20"/>
+    <poi id="x17" color="cyan" layer="202.00" x="6843.40" y="7707.64"/>
+    <poi id="x18" color="cyan" layer="202.00" x="6830.86" y="7757.82"/>
+    <poi id="x19" color="blue" layer="202.00" x="7236.83" y="7898.21"/>
+    <poi id="x2" color="yellow" layer="202.00" x="7119.10" y="7986.14"/>
+    <poi id="x20" color="cyan" layer="202.00" x="7178.39" y="7893.82"/>
+    <poi id="x21" color="blue" layer="202.00" x="7107.88" y="7874.41"/>
+    <poi id="x22" color="blue" layer="202.00" x="6969.62" y="7886.59"/>
+    <poi id="x23" color="blue" layer="202.00" x="6870.85" y="7811.08"/>
+    <poi id="x3" color="yellow" layer="202.00" x="6833.56" y="8054.40"/>
+    <poi id="x4" color="yellow" layer="202.00" x="6703.32" y="7635.48"/>
+    <poi id="x5" color="yellow" layer="202.00" x="6888.78" y="7742.76"/>
+    <poi id="x6" color="yellow" layer="202.00" x="6972.51" y="7796.04"/>
+    <poi id="x7" color="128,128,0" layer="202.00" x="7319.39" y="7876.16"/>
+    <poi id="x8" color="128,128,0" layer="202.00" x="7123.48" y="8002.21"/>
+    <poi id="x9" color="128,128,0" layer="202.00" x="6886.50" y="8027.39"/>
 </additional>

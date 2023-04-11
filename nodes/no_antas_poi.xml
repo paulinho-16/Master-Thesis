@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-03-22 11:26:35 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-04-11 15:00:01 by Eclipse SUMO netedit Version 1.15.0
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
     <!-- Shapes -->
-    <poi id="poi_0" type="x2" color="yellow" layer="202.00" x="9693.53" y="13060.34"/>
-    <poi id="poi_1" type="q1" color="yellow" layer="202.00" x="9814.15" y="12825.74"/>
-    <poi id="poi_10" type="x11" color="cyan" layer="202.00" x="9685.19" y="13031.33"/>
-    <poi id="poi_11" type="x12" color="cyan" layer="202.00" x="9678.61" y="13045.49"/>
-    <poi id="poi_12" type="x13" color="cyan" layer="202.00" x="9625.84" y="12902.61"/>
-    <poi id="poi_13" type="x14" color="cyan" layer="202.00" x="9613.66" y="12891.10"/>
-    <poi id="poi_14" type="x15" color="cyan" layer="202.00" x="9628.66" y="12801.44"/>
-    <poi id="poi_15" type="x16" color="cyan" layer="202.00" x="9688.11" y="12780.31"/>
-    <poi id="poi_16" type="x17" color="blue" layer="202.00" x="9560.11" y="12987.91"/>
-    <poi id="poi_17" type="x18" color="blue" layer="202.00" x="9610.09" y="13027.42"/>
-    <poi id="poi_18" type="x19" color="blue" layer="202.00" x="9648.41" y="12939.52"/>
-    <poi id="poi_19" type="x20" color="blue" layer="202.00" x="9726.18" y="12828.78"/>
-    <poi id="poi_2" type="x3" color="yellow" layer="202.00" x="9448.55" y="13030.75"/>
-    <poi id="poi_20" type="x21" color="blue" layer="202.00" x="9683.72" y="12804.41"/>
-    <poi id="poi_21" type="x22" color="blue" layer="202.00" x="9668.67" y="12920.15"/>
-    <poi id="poi_22" type="x23" color="blue" layer="202.00" x="9694.29" y="12985.73"/>
-    <poi id="poi_23" type="x24" color="0,0,128" layer="202.00" x="9664.84" y="13025.46"/>
-    <poi id="poi_24" type="x25" color="blue" layer="202.00" x="9614.79" y="13055.15"/>
-    <poi id="poi_3" type="x4" color="yellow" layer="202.00" x="9611.31" y="12738.14"/>
-    <poi id="poi_4" type="x5" color="128,128,0" layer="202.00" x="9875.50" y="12777.69"/>
-    <poi id="poi_5" type="x6" color="128,128,0" layer="202.00" x="9710.92" y="13034.59"/>
-    <poi id="poi_6" type="q7" color="128,128,0" layer="202.00" x="9481.37" y="13053.52"/>
-    <poi id="poi_7" type="x8" color="128,128,0" layer="202.00" x="9581.36" y="12739.20"/>
-    <poi id="poi_8" type="x9" color="cyan" layer="202.00" x="9629.79" y="12939.82"/>
-    <poi id="poi_9" type="x10" color="cyan" layer="202.00" x="9704.45" y="12903.88"/>
+    <poi id="q1" color="yellow" layer="202.00" x="9814.15" y="12825.74"/>
+    <poi id="q7" color="128,128,0" layer="202.00" x="9481.37" y="13053.52"/>
+    <poi id="x10" color="cyan" layer="202.00" x="9704.45" y="12903.88"/>
+    <poi id="x11" color="cyan" layer="202.00" x="9685.19" y="13031.33"/>
+    <poi id="x12" color="cyan" layer="202.00" x="9678.61" y="13045.49"/>
+    <poi id="x13" color="cyan" layer="202.00" x="9625.84" y="12902.61"/>
+    <poi id="x14" color="cyan" layer="202.00" x="9613.66" y="12891.10"/>
+    <poi id="x15" color="cyan" layer="202.00" x="9628.66" y="12801.44"/>
+    <poi id="x16" color="cyan" layer="202.00" x="9688.11" y="12780.31"/>
+    <poi id="x17" color="blue" layer="202.00" x="9560.11" y="12987.91"/>
+    <poi id="x18" color="blue" layer="202.00" x="9610.09" y="13027.42"/>
+    <poi id="x19" color="blue" layer="202.00" x="9648.41" y="12939.52"/>
+    <poi id="x2" color="yellow" layer="202.00" x="9693.53" y="13060.34"/>
+    <poi id="x20" color="blue" layer="202.00" x="9726.18" y="12828.78"/>
+    <poi id="x21" color="blue" layer="202.00" x="9683.72" y="12804.41"/>
+    <poi id="x22" color="blue" layer="202.00" x="9668.67" y="12920.15"/>
+    <poi id="x23" color="blue" layer="202.00" x="9694.29" y="12985.73"/>
+    <poi id="x24" color="0,0,128" layer="202.00" x="9664.84" y="13025.46"/>
+    <poi id="x25" color="blue" layer="202.00" x="9614.79" y="13055.15"/>
+    <poi id="x3" color="yellow" layer="202.00" x="9448.55" y="13030.75"/>
+    <poi id="x4" color="yellow" layer="202.00" x="9611.31" y="12738.14"/>
+    <poi id="x5" color="128,128,0" layer="202.00" x="9875.50" y="12777.69"/>
+    <poi id="x6" color="128,128,0" layer="202.00" x="9710.92" y="13034.59"/>
+    <poi id="x8" color="128,128,0" layer="202.00" x="9581.36" y="12739.20"/>
+    <poi id="x9" color="cyan" layer="202.00" x="9629.79" y="12939.82"/>
 </additional>
