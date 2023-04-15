@@ -10,6 +10,8 @@ import xml.etree.cElementTree as ET
 
 from .utils import load_config, write_xml
 
+# TODO: automatically determine the roads whose flow is known due to the detectors (qX variables)
+
 def get_entry_exit_nodes(nodes):
     entry_nodes = []
     exit_nodes = []
@@ -108,26 +110,28 @@ def gen_variables(network, entry_nodes, exit_nodes, network_file):
         variables[edge_id] = variable
         gen_pinpoint(edge, variable, '128,128,0', additional_tag)
 
-        # define the variables of the edges that serve as a continuation of the exit edges
+        # define the variables of the edges that serve as a continuation of the exit edges - TODO: change the same way as in the prepare.py file (looking for edge's incoming and outgoing edges)
         previous_edges = edge.getFromNode().getIncoming()
         following_edges = edge.getFromNode().getOutgoing()
         while len(previous_edges) == 1 and len(following_edges) == 1:
             variables[previous_edges[0].getID()] = variable
-            previous_edges = previous_edges[0].getFromNode().getIncoming()
-            following_edges = previous_edges[0].getFromNode().getOutgoing()
+            from_node = previous_edges[0].getFromNode()
+            previous_edges = from_node.getIncoming()
+            following_edges = from_node.getOutgoing()
 
         variable_count += 1
     
     process_list = deque(process_list)
     variable_count = calculate_intermediate_variables(network, process_list, variable_count, variables, additional_tag)
     
-    write_xml(additional_tag, network_file.replace('.net', '_poi'))
+    write_xml(additional_tag, network_file.replace('.net', '_poi_apagar')) # TODO: mudar só para _poi
 
     return variable_count
 
 if __name__ == '__main__':
     config = load_config()
     network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml')
+    # network_file = config.get('nodes', 'NODE_AREINHO', fallback='./nodes/no_areinho.net.xml')
     network = sumolib.net.readNet(network_file)
 
     entry_nodes, exit_nodes = get_entry_exit_nodes(network.getNodes())
