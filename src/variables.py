@@ -1,16 +1,15 @@
 """Variable Definitions
 
-TODO: write description
+This script creates the flow variables of the network, and generates the corresponding POIs.
 
 """
 
 import sumolib
+import itertools
 from collections import deque
 import xml.etree.cElementTree as ET
 
 from .utils import load_config, write_xml
-
-# TODO: automatically determine the roads whose flow is known due to the detectors (qX variables)
 
 def get_entry_exit_nodes(nodes):
     entry_nodes = []
@@ -24,6 +23,23 @@ def get_entry_exit_nodes(nodes):
     
     return entry_nodes, exit_nodes
 
+def get_sensors_coverage(coverage_file):
+        sensors_coverage = {} # sensor : [edges]
+        with open(coverage_file, 'r') as f:
+            lines = f.readlines()
+
+            for line in lines:
+                if line.startswith('###'):
+                    sensor = line.split('sensor')[-1].strip()[:-1]
+                    sensors_coverage[sensor] = []
+                elif line != '\n':
+                    sensors_coverage[sensor].append(line.strip())
+
+        return sensors_coverage
+
+def get_variable_name(edge_id, covered_edges, variable_count):
+    return f'q{variable_count}' if edge_id in covered_edges else f'x{variable_count}'
+
 def gen_pinpoint(edge, variable, color, additional_tag):
     # get the coordinates of the center of an edge: if its shape has only 2 tuples, the center is calculated directly by averaging the two points
     shape = edge.getShape()
@@ -31,7 +47,7 @@ def gen_pinpoint(edge, variable, color, additional_tag):
 
     ET.SubElement(additional_tag, 'poi', id=variable, color=color, layer='202.00', x=str(center[0]), y=str(center[1]), type='flow variable', name=edge.getID())
 
-def calculate_intermediate_variables(network, process_list, variable_count, variables, additional_tag):
+def calculate_intermediate_variables(network, process_list, variable_count, variables, covered_edges, additional_tag):
     while process_list:
         edge = process_list.popleft()
 
@@ -54,7 +70,7 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
                     break
 
             if processable:
-                variable = f'x{variable_count}'
+                variable = get_variable_name(following_edges[0].getID(), covered_edges, variable_count)
                 variables[following_edges[0].getID()] = variable
                 gen_pinpoint(following_edges[0], variable, 'cyan', additional_tag)
 
@@ -64,7 +80,7 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
         elif len(merging_edges) == 1 and len(following_edges) > 1: # case of a splitting edge , assign new variables
             for f_edge in following_edges:
                 if f_edge.getID() not in variables:
-                    variable = f'x{variable_count}'
+                    variable = get_variable_name(f_edge.getID(), covered_edges, variable_count)
                     variables[f_edge.getID()] = variable
                     gen_pinpoint(f_edge, variable, 'cyan', additional_tag)
 
@@ -77,7 +93,7 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
 
     return variable_count
 
-def gen_variables(network, entry_nodes, exit_nodes, network_file):
+def gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file):
     additional_tag = ET.Element('additional')
     variable_count = 1
     variables = {} # edge : variable
@@ -91,7 +107,7 @@ def gen_variables(network, entry_nodes, exit_nodes, network_file):
         edge_id = entry.getOutgoing()[0].getID()
         edge = network.getEdge(edge_id)
 
-        variable = f'x{variable_count}'
+        variable = get_variable_name(edge_id, covered_edges, variable_count)
         variables[edge_id] = variable
         gen_pinpoint(edge, variable, 'yellow', additional_tag)
 
@@ -106,7 +122,7 @@ def gen_variables(network, entry_nodes, exit_nodes, network_file):
         edge_id = exit.getIncoming()[0].getID()
         edge = network.getEdge(edge_id)
 
-        variable = f'x{variable_count}'
+        variable = get_variable_name(edge_id, covered_edges, variable_count)
         variables[edge_id] = variable
         gen_pinpoint(edge, variable, '128,128,0', additional_tag)
 
@@ -121,7 +137,7 @@ def gen_variables(network, entry_nodes, exit_nodes, network_file):
         variable_count += 1
     
     process_list = deque(process_list)
-    variable_count = calculate_intermediate_variables(network, process_list, variable_count, variables, additional_tag)
+    variable_count = calculate_intermediate_variables(network, process_list, variable_count, variables, covered_edges, additional_tag)
     
     write_xml(additional_tag, network_file.replace('.net', '_poi'))
 
@@ -131,6 +147,11 @@ if __name__ == '__main__':
     config = load_config()
     # network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml')
     network_file = config.get('nodes', 'NODE_AREINHO', fallback='./nodes/no_areinho.net.xml')
+    coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
+
+    sensors_coverage = get_sensors_coverage(coverage_file)
+    covered_edges = set(itertools.chain(*sensors_coverage.values()))
+
     network = sumolib.net.readNet(network_file)
 
     entry_nodes, exit_nodes = get_entry_exit_nodes(network.getNodes())
@@ -138,5 +159,5 @@ if __name__ == '__main__':
     print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
     print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
 
-    variable_count = gen_variables(network, entry_nodes, exit_nodes, network_file)
+    variable_count = gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file)
     print(f"Generated {variable_count - 1} variables.")
