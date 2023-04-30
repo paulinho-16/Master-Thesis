@@ -8,7 +8,6 @@ It also deduces the equation systems for the VCI nodes, generating the file `equ
 import re
 import sympy
 import sumolib
-import itertools
 from collections import deque
 import xml.etree.cElementTree as ET
 
@@ -40,17 +39,22 @@ def get_sensors_coverage(coverage_file):
 
         return sensors_coverage
 
-def get_variable_name(edge_id, covered_edges, variable_count):
-    return f'q{variable_count}' if edge_id in covered_edges else f'x{variable_count}'
+def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count):
+    variable = f'x{variable_count}'
+    for sensor, edges in sensors_coverage.items():
+        if edge_id in edges:
+            variable = f'q{variable_count}'
+            node_sensors[node_name].append(sensor)
+    return variable
 
 def gen_pinpoint(edge, variable, color, additional_tag):
-    # get the coordinates of the center of an edge: if its shape has only 2 tuples, the center is calculated directly by averaging the two points
+    # get the coordinates of the center of an edge: if its shape only has 2 tuples, the center is calculated directly by averaging the two points
     shape = edge.getShape()
     center = shape[int(len(shape) / 2)] if len(shape) != 2 else ((shape[0][0] + shape[1][0]) / 2, (shape[0][1] + shape[1][1]) / 2)
 
     ET.SubElement(additional_tag, 'poi', id=variable, color=color, layer='202.00', x=str(center[0]), y=str(center[1]), type='flow variable', name=edge.getID())
 
-def calculate_intermediate_variables(network, process_list, variable_count, variables, covered_edges, additional_tag):
+def calculate_intermediate_variables(network, node_name, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag):
     equations = []
     while process_list:
         edge = process_list.popleft()
@@ -72,7 +76,7 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
 
             if processable:
                 if following_edges[0].getID() not in variables:
-                    variable = get_variable_name(following_edges[0].getID(), covered_edges, variable_count)
+                    variable = get_variable_name(following_edges[0].getID(), node_name, sensors_coverage, node_sensors, variable_count)
                     variables[following_edges[0].getID()] = variable
                     gen_pinpoint(following_edges[0], variable, 'cyan', additional_tag)
 
@@ -89,10 +93,10 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
                 eq = f'{variables[following_edges[0].getID()]} = ' + ' + '.join([variables[m_edge.getID()] for m_edge in merging_edges])
                 equations.append(eq)
 
-        elif len(merging_edges) == 1 and len(following_edges) > 1: # case of a splitting edge , assign new variables
+        elif len(merging_edges) == 1 and len(following_edges) > 1: # case of a splitting edge, assign new variables
             for f_edge in following_edges:
                 if f_edge.getID() not in variables:
-                    variable = get_variable_name(f_edge.getID(), covered_edges, variable_count)
+                    variable = get_variable_name(f_edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
                     variables[f_edge.getID()] = variable
                     gen_pinpoint(f_edge, variable, 'cyan', additional_tag)
 
@@ -109,7 +113,7 @@ def calculate_intermediate_variables(network, process_list, variable_count, vari
 
     return variable_count, equations
 
-def gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file):
+def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
     additional_tag = ET.Element('additional')
     variable_count = 1
     variables = {} # edge : variable
@@ -123,7 +127,7 @@ def gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file)
         edge_id = entry.getOutgoing()[0].getID()
         edge = network.getEdge(edge_id)
 
-        variable = get_variable_name(edge_id, covered_edges, variable_count)
+        variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
         variables[edge_id] = variable
         gen_pinpoint(edge, variable, 'yellow', additional_tag)
 
@@ -138,7 +142,7 @@ def gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file)
         edge_id = exit.getIncoming()[0].getID()
         edge = network.getEdge(edge_id)
 
-        variable = get_variable_name(edge_id, covered_edges, variable_count)
+        variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
         variables[edge_id] = variable
         gen_pinpoint(edge, variable, '128,128,0', additional_tag)
 
@@ -153,7 +157,7 @@ def gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file)
         variable_count += 1
     
     process_list = deque(process_list)
-    variable_count, equations = calculate_intermediate_variables(network, process_list, variable_count, variables, covered_edges, additional_tag)
+    variable_count, equations = calculate_intermediate_variables(network, node_name, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
     
     write_xml(additional_tag, network_file.replace('.net', '_poi'))
 
@@ -251,11 +255,13 @@ if __name__ == '__main__':
     config = load_config()
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',')
     # node_name, network_file = config.get('nodes', 'NODE_AREINHO', fallback='./nodes/no_areinho.net.xml').split(',')
+    node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
 
+    node_sensors = {node_name: []} # TODO: fill dictionary with every VCI node
+
     sensors_coverage = get_sensors_coverage(coverage_file)
-    covered_edges = set(itertools.chain(*sensors_coverage.values()))
 
     network = sumolib.net.readNet(network_file)
 
@@ -265,10 +271,16 @@ if __name__ == '__main__':
     print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
 
     with open(equations_file, 'w') as ef:
-        variable_count, equations = gen_variables(network, entry_nodes, exit_nodes, covered_edges, network_file)
+        variable_count, equations = gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
+
+        print(f'Node sensors: {node_sensors}')
+
+        with open(node_sensors_file, 'w') as nsf:
+            nsf.write(f'### Sensors of {node_name}:\n')
+            for sensor in node_sensors[node_name]:
+                nsf.write(f'{sensor}\n')
 
         if node_name == 'Article':
-            print('entrou')
             patterns = {'x12': 'q12', 'x4': 'q4', 'x10': 'q10', 'x5': 'q5', 'x8': 'q8', 'x7': 'q7'} # TODO: if I integrate the article sensors coords, remove this conditional block
             for i, eq in enumerate(equations):
                 for pattern, replacement in patterns.items():
