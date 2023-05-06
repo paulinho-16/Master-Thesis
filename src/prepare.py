@@ -7,6 +7,8 @@ It also prepares the simulation view, editing the file `vci.view.xml` in the `su
 
 import sumolib
 import operator
+import xlsxwriter
+import numpy as np
 import pandas as pd
 from pathlib import Path
 import xml.etree.cElementTree as ET
@@ -91,6 +93,44 @@ def prepare_view():
     delay_elem.set('value', config.get('params', 'DELAY', fallback='20'))
     write_xml(root, view_file)
 
+def prepare_data():
+    data_dir = config.get('dir', 'DATA', fallback='./data')
+    data_file = f'{data_dir}/sensor_data.xlsx'
+    workbook = xlsxwriter.Workbook(data_file)
+    timestamp_sheet = workbook.add_worksheet('timestamp')
+    days = np.empty(shape=(0,))
+
+    for file in Path(data_dir).iterdir():
+        if file.is_file() and file.suffix == '.xlsx' and not file.name.startswith('~$') and file.name not in ['sensor_locations.xlsx', 'article_data.xlsx', 'sensor_data.xlsx']:
+            sensor = file.name.split('_data.xlsx')[0]
+            worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
+            workbook.add_worksheet(worksheet_name)
+
+            df = pd.read_excel(file)
+
+            df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+            timestamp_days = df['Timestamp'].dt.strftime('%Y-%m-%d').unique()
+            if days.size == 0:
+                days = timestamp_days
+            elif not np.array_equal(days, timestamp_days):
+                print(f"Inconsistent timestamps in file {file.name}!")
+
+    # create the timestamp worksheet
+    format = {'align': 'vcenter', 'valign': 'center'}
+    base_format = workbook.add_format(format)
+    format.update({'bold': True, 'border': 1, 'bottom': 1, 'right': 1})
+    header_format = workbook.add_format(format)
+    timestamp_sheet.set_column('A:A', 15)
+    timestamp_sheet.write('A1', 'timestamp', header_format)
+    cell_number = 2
+    for day in days:
+        for hour in range(24):
+            timestamp_sheet.write(f'A{cell_number}', f'{day}-{hour:02d}-00', base_format)
+            cell_number += 1
+
+    workbook.close()
+
+
 if __name__ == '__main__':
     config = load_config()
     df = pd.read_excel(config.get('sensors', 'LOCATIONS', fallback='./data/sensor_locations.xlsx'))
@@ -98,3 +138,4 @@ if __name__ == '__main__':
 
     gen_calibrators(df, network)
     prepare_view()
+    prepare_data()
