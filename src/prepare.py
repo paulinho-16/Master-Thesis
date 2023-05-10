@@ -1,7 +1,8 @@
 """Simulation Preparation
 
 This script reads the location of the detectors from a spreadsheet and creates the calibrator objects in those positions, generating the file `detectors.add.xml` in the `sumo` folder.
-It also prepares the simulation view, editing the file `vci.view.xml` in the `sumo` folder according to the parameters in the `config.ini` file.
+It prepares the simulation view, editing the file `vci.view.xml` in the `sumo` folder according to the parameters in the `config.ini` file.
+It also prepares sensor data, grouping counts into 1-minute blocks.
 
 """
 
@@ -100,14 +101,21 @@ def prepare_data():
     timestamp_sheet = workbook.add_worksheet('timestamp')
     days = np.empty(shape=(0,))
 
+    # define the formats
+    format = {'align': 'vcenter', 'valign': 'center'}
+    base_format = workbook.add_format(format)
+    format.update({'bold': True, 'border': 1, 'bottom': 1, 'right': 1})
+    header_format = workbook.add_format(format)
+
     for file in Path(data_dir).iterdir():
         if file.is_file() and file.suffix == '.xlsx' and not file.name.startswith('~$') and file.name not in ['sensor_locations.xlsx', 'article_data.xlsx', 'sensor_data.xlsx']:
             sensor = file.name.split('_data.xlsx')[0]
             worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
-            workbook.add_worksheet(worksheet_name)
+            sensor_sheet = workbook.add_worksheet(worksheet_name)
 
             df = pd.read_excel(file)
 
+            # check the days for which we have sensor data
             df['Timestamp'] = pd.to_datetime(df['Timestamp'])
             timestamp_days = df['Timestamp'].dt.strftime('%Y-%m-%d').unique()
             if days.size == 0:
@@ -115,11 +123,25 @@ def prepare_data():
             elif not np.array_equal(days, timestamp_days):
                 print(f"Inconsistent timestamps in file {file.name}!")
 
+            df['vehicle_type'] = df['VehicleTypeId'].map({3: 'car', 4: 'car', 5: 'truck', 6: 'truck'}) # TODO: verify if the car and truck classes are correctly mapped
+            df.set_index('Timestamp', inplace=True)
+            grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
+
+            result = pd.DataFrame({
+                'carFlows': grouped['MedidasCCVDetailId'].count()['car'],
+                'carSpeeds': grouped['Velocidade'].mean()['car'],
+                'truckFlows': grouped['MedidasCCVDetailId'].count()['truck'],
+                'truckSpeeds': grouped['Velocidade'].mean()['truck']
+            })
+            result = result.fillna(0)
+            
+            # create the sensor worksheet
+            sensor_sheet.set_column('A:D', 15)
+            for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
+                sensor_sheet.write(title_cell, title_name, header_format)
+                sensor_sheet.write_column(value_cell, result[title_name], base_format)
+
     # create the timestamp worksheet
-    format = {'align': 'vcenter', 'valign': 'center'}
-    base_format = workbook.add_format(format)
-    format.update({'bold': True, 'border': 1, 'bottom': 1, 'right': 1})
-    header_format = workbook.add_format(format)
     timestamp_sheet.set_column('A:A', 15)
     timestamp_sheet.write('A1', 'timestamp', header_format)
     cell_number = 2
