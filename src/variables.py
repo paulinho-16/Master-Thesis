@@ -1,7 +1,8 @@
 """Variable Definitions and Equation Systems Generation
 
 This script creates the flow variables of the network and generates the corresponding POIs.
-It also deduces the equation systems for the VCI nodes, generating the file `equations.md` in the `nodes` folder.
+It deduces the equation systems for the VCI nodes, generating the file `equations.md` in the `nodes` folder.
+It also generates the POIs for the routers of the network.
 
 """
 
@@ -10,6 +11,7 @@ import sympy
 import sumolib
 from collections import deque
 import xml.etree.cElementTree as ET
+from shapely.geometry import LineString
 
 from .utils import load_config, remove_chars, write_xml
 
@@ -47,15 +49,20 @@ def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variab
             node_sensors[node_name].append(sensor)
     return variable
 
-def gen_pinpoint(edge, variable, color, additional_tag):
-    # get the coordinates of the center of an edge: if its shape only has 2 tuples, the center is calculated directly by averaging the two points
+def gen_pinpoint(edge, id, type, color, additional_tag):
     shape = edge.getShape()
-    center = shape[int(len(shape) / 2)] if len(shape) != 2 else ((shape[0][0] + shape[1][0]) / 2, (shape[0][1] + shape[1][1]) / 2)
+    if type == 'flow variable': # get the coordinates of the center of an edge: if its shape only has 2 tuples, the center is calculated directly by averaging the two points
+        pos = shape[int(len(shape) / 2)] if len(shape) != 2 else ((shape[0][0] + shape[1][0]) / 2, (shape[0][1] + shape[1][1]) / 2)
+    elif type == 'router': # position the router a little further in front of the center of the edge
+        line = LineString(shape)
+        midpoint = line.interpolate(0.75, normalized=True)
+        pos = midpoint.coords[0]
 
-    ET.SubElement(additional_tag, 'poi', id=variable, color=color, layer='202.00', x=str(center[0]), y=str(center[1]), type='flow variable', name=edge.getID())
+    ET.SubElement(additional_tag, 'poi', id=id, color=color, layer='202.00', x=str(pos[0]), y=str(pos[1]), type=type, name=edge.getID())
 
 def calculate_intermediate_variables(network, node_name, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag):
     equations = []
+    router_count = 1
     while process_list:
         edge = process_list.popleft()
 
@@ -78,7 +85,7 @@ def calculate_intermediate_variables(network, node_name, process_list, variable_
                 if following_edges[0].getID() not in variables:
                     variable = get_variable_name(following_edges[0].getID(), node_name, sensors_coverage, node_sensors, variable_count)
                     variables[following_edges[0].getID()] = variable
-                    gen_pinpoint(following_edges[0], variable, 'cyan', additional_tag)
+                    gen_pinpoint(following_edges[0], variable, 'flow variable', 'cyan', additional_tag)
 
                     # remove all merging edges from the process list, as they do not need more processing
                     merging_edges_ids = [m_edge.getID() for m_edge in merging_edges]
@@ -94,11 +101,12 @@ def calculate_intermediate_variables(network, node_name, process_list, variable_
                 equations.append(eq)
 
         elif len(merging_edges) == 1 and len(following_edges) > 1: # case of a splitting edge, assign new variables
+            # assign new variables to the following edges
             for f_edge in following_edges:
                 if f_edge.getID() not in variables:
                     variable = get_variable_name(f_edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
                     variables[f_edge.getID()] = variable
-                    gen_pinpoint(f_edge, variable, 'cyan', additional_tag)
+                    gen_pinpoint(f_edge, variable, 'flow variable', 'cyan', additional_tag)
 
                     variable_count += 1
                     process_list.append(f_edge)
@@ -106,6 +114,12 @@ def calculate_intermediate_variables(network, node_name, process_list, variable_
             # append a new equation
             eq = f'{variables[edge.getID()]} = ' + ' + '.join([variables[f_edge.getID()] for f_edge in following_edges])
             equations.append(eq)
+
+            # place a router on the split edge
+            gen_pinpoint(edge, f'router_{router_count}', 'router', 'green', additional_tag)
+            router_count += 1
+
+    print(f"Generated {router_count - 1} routers.")
 
     for edge in network.getEdges():
         if edge.getID() not in variables:
@@ -129,7 +143,7 @@ def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage,
 
         variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
         variables[edge_id] = variable
-        gen_pinpoint(edge, variable, 'yellow', additional_tag)
+        gen_pinpoint(edge, variable, 'flow variable', 'yellow', additional_tag)
 
         process_list.append(edge)
         variable_count += 1
@@ -144,7 +158,7 @@ def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage,
 
         variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
         variables[edge_id] = variable
-        gen_pinpoint(edge, variable, '128,128,0', additional_tag)
+        gen_pinpoint(edge, variable, 'flow variable', '128,128,0', additional_tag)
 
         # define the variables of the edges that serve as a continuation of the exit edges
         previous_edges = list(edge.getIncoming().keys())
