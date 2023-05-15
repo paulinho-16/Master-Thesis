@@ -7,12 +7,26 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 import os, sys
 import time
 import traci
+import xml.etree.cElementTree as ET
 
 from .utils import load_config
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element
 # - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values
+
+def initialize_variables(network_file):
+    tree = ET.parse(network_file.replace('.net', '_poi'))
+    root = tree.getroot()
+
+    # initialize the variables for each router (permanent distribution)
+    routers, perm_dists = {}, {}
+    router_pois = [poi for poi in root.findall('poi') if poi.get('type') == 'router']
+    for poi in router_pois:
+        routers[poi.get('id')] = [poi.get('x'), poi.get('y'), poi.get('name')]
+        perm_dists[poi.get('id')] = [[[],[],[0]]]
+
+    return routers, perm_dists
 
 def prepare_sumo(config):
     if 'SUMO_HOME' in os.environ:
@@ -30,6 +44,8 @@ def prepare_sumo(config):
 if __name__ == '__main__':
     config = load_config()
     sumo_cmd = prepare_sumo(config)
+    node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    routers, perm_dists = initialize_variables(network_file)
     
     current_hour = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))
