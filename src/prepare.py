@@ -113,7 +113,7 @@ def prepare_data():
             worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
             sensor_sheet = workbook.add_worksheet(worksheet_name)
 
-            df = pd.read_excel(file)
+            df = pd.read_excel(file, sheet_name='Traffic')
 
             # check the days for which we have sensor data
             df['Timestamp'] = pd.to_datetime(df['Timestamp'])
