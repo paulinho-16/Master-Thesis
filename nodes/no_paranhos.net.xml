@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-04-11 15:05:40 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-05-23 12:16:05 by Eclipse SUMO netedit Version 1.15.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
@@ -181,6 +181,10 @@
     </edge>
     <edge id=":2354389960_0" function="internal">
         <lane id=":2354389960_0_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="25.00" length="7.93" shape="8289.09,13402.83 8288.87,13405.16 8289.07,13406.79 8289.22,13408.42 8288.85,13410.71"/>
+    </edge>
+    <edge id=":2490198479_0" function="internal">
+        <lane id=":2490198479_0_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="0.30" shape="8147.66,13143.92 8147.50,13143.66"/>
+        <lane id=":2490198479_0_1" index="1" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="0.30" shape="8150.40,13142.26 8150.24,13142.00"/>
     </edge>
     <edge id=":2490198483_0" function="internal">
         <lane id=":2490198483_0_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="22.22" length="2.65" shape="8172.71,13351.59 8172.41,13350.88 8172.08,13350.45 8171.72,13350.03 8171.30,13349.37"/>
@@ -754,7 +758,10 @@
         <request index="0" response="0" foes="0" cont="0"/>
     </junction>
     <junction id="2490198478" type="dead_end" x="8124.23" y="13102.29" incLanes="241364283_0 241364283_1" intLanes="" shape="8121.50,13103.95 8126.96,13100.63"/>
-    <junction id="2490198479" type="dead_end" x="8148.95" y="13142.96" incLanes="480140407#1_0 480140407#1_1" intLanes="" shape="8146.29,13144.74 8151.77,13141.43 8151.61,13141.17 8146.14,13144.49"/>
+    <junction id="2490198479" type="priority" x="8148.95" y="13142.96" incLanes="480140407#1_0 480140407#1_1" intLanes=":2490198479_0_0 :2490198479_0_1" shape="8146.29,13144.74 8151.77,13141.43 8151.61,13141.17 8146.14,13144.49">
+        <request index="0" response="00" foes="00" cont="0"/>
+        <request index="1" response="00" foes="00" cont="0"/>
+    </junction>
     <junction id="2490198483" type="priority" x="8174.69" y="13352.48" incLanes="448858673_0 448858673_1" intLanes=":2490198483_0_0 :2490198483_1_0" shape="8171.19,13352.08 8177.28,13350.10 8176.96,13349.05 8176.90,13348.66 8176.89,13348.27 8176.93,13347.81 8177.01,13347.18 8173.84,13346.76 8173.52,13348.39 8173.35,13348.83 8173.15,13349.02 8172.94,13348.95 8172.72,13348.63 8169.88,13350.11 8170.38,13350.84 8170.60,13351.07 8170.81,13351.30 8171.01,13351.62">
         <request index="0" response="00" foes="00" cont="0"/>
         <request index="1" response="00" foes="00" cont="0"/>
@@ -904,6 +911,8 @@
     <connection from="480140406" to="478886779" fromLane="1" toLane="1" via=":128583855_0_1" dir="s" state="M"/>
     <connection from="480140407#0" to="480140407#1" fromLane="0" toLane="0" via=":cluster_4731603473_5291598250_0_0" tl="GS_cluster_4731603473_5291598250" linkIndex="0" dir="s" state="O"/>
     <connection from="480140407#0" to="480140407#1" fromLane="1" toLane="1" via=":cluster_4731603473_5291598250_0_1" tl="GS_cluster_4731603473_5291598250" linkIndex="1" dir="s" state="O"/>
+    <connection from="480140407#1" to="241364283" fromLane="0" toLane="0" via=":2490198479_0_0" dir="s" state="M"/>
+    <connection from="480140407#1" to="241364283" fromLane="1" toLane="1" via=":2490198479_0_1" dir="s" state="M"/>
     <connection from="547657330" to="547657331" fromLane="0" toLane="0" via=":5291597602_0_0" dir="s" state="M"/>
     <connection from="547657330" to="547657331" fromLane="0" toLane="1" via=":5291597602_0_1" dir="s" state="M"/>
     <connection from="547657331" to="13798272" fromLane="1" toLane="0" via=":128607704_0_0" dir="s" state="M"/>
@@ -966,6 +975,8 @@
     <connection from=":1999553112_0" to="480140407#0" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":1999553112_0" to="480140407#0" fromLane="1" toLane="1" dir="s" state="M"/>
     <connection from=":2354389960_0" to="480140401" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":2490198479_0" to="241364283" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":2490198479_0" to="241364283" fromLane="1" toLane="1" dir="s" state="M"/>
     <connection from=":2490198483_0" to="480140398" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":2490198483_1" to="13798105" fromLane="0" toLane="0" dir="L" state="M"/>
     <connection from=":2490198491_0" to="241364281" fromLane="0" toLane="0" dir="s" state="M"/>

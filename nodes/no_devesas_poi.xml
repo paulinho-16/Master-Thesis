@@ -1,18 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!-- generated on 2023-04-11 15:29:14 by Eclipse SUMO netedit Version 1.15.0
--->
-
-<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
-    <!-- Shapes -->
-    <poi id="x1" color="yellow" layer="202.00" x="5648.10" y="8616.28"/>
-    <poi id="x10" color="cyan" layer="202.00" x="5679.71" y="8480.24"/>
-    <poi id="x2" color="yellow" layer="202.00" x="5625.10" y="8445.67"/>
-    <poi id="x3" color="yellow" layer="202.00" x="5680.70" y="8350.32"/>
-    <poi id="x4" color="yellow" layer="202.00" x="5699.50" y="8497.50"/>
-    <poi id="x5" color="128,128,0" layer="202.00" x="5686.56" y="8609.53"/>
-    <poi id="x6" color="128,128,0" layer="202.00" x="5627.18" y="8492.81"/>
-    <poi id="x7" color="128,128,0" layer="202.00" x="5636.23" y="8332.98"/>
-    <poi id="x8" color="128,128,0" layer="202.00" x="5697.62" y="8453.51"/>
-    <poi id="x9" color="cyan" layer="202.00" x="5645.43" y="8469.92"/>
+<?xml version='1.0' encoding='UTF-8'?>
+<additional>
+	<poi id="x1" color="yellow" layer="202.00" x="5641.45" y="8434.81" type="flow variable" name="173072184" />
+	<poi id="x2" color="yellow" layer="202.00" x="5658.7787499999995" y="8610.970000000001" type="flow variable" name="461172813-AddedOffRampEdge" />
+	<poi id="q3" color="yellow" layer="202.00" x="5668.289999999999" y="8334.300000000001" type="flow variable" name="461173094-AddedOffRampEdge" />
+	<poi id="x4" color="yellow" layer="202.00" x="5690.85" y="8497.38" type="flow variable" name="54375654" />
+	<poi id="x5" color="128,128,0" layer="202.00" x="5685.02" y="8451.68" type="flow variable" name="54375651#0" />
+	<poi id="x6" color="128,128,0" layer="202.00" x="5636.87" y="8490.25" type="flow variable" name="54509443" />
+	<poi id="x7" color="128,128,0" layer="202.00" x="5648.59" y="8329.90625" type="flow variable" name="597084093" />
+	<poi id="q8" color="128,128,0" layer="202.00" x="5676.36" y="8610.93" type="flow variable" name="95367763#1-AddedOnRampEdge" />
+	<poi id="x9" color="cyan" layer="202.00" x="5656.49" y="8465.07" type="flow variable" name="597084094" />
+	<poi id="router_1" color="green" layer="202.00" x="5657.558125" y="8586.4" type="router" name="461172813-AddedOffRampEdge" />
+	<poi id="q10" color="cyan" layer="202.00" x="5669.4" y="8478.09" type="flow variable" name="95367763#0" />
+	<poi id="router_2" color="green" layer="202.00" x="5670.021974448444" y="8367.489989383896" type="router" name="461173094-AddedOffRampEdge" />
 </additional>
