@@ -46,8 +46,6 @@ def get_closest_lane(network, x, y, radius):
     else:
         raise Exception()
 
-    return None, None
-
 def gen_calibrators(df, network, network_article):
     radius = 50
     additional_tag = ET.Element('additional')
@@ -60,7 +58,6 @@ def gen_calibrators(df, network, network_article):
     with open(coverage_file, 'w') as f:
         coverage = ''
         calib_id = 1
-        calib_id_article = 1
 
         for _, row in df.iterrows():
             network_name = row['Network']
@@ -81,8 +78,7 @@ def gen_calibrators(df, network, network_article):
                 calib_id += 1
             else:
                 closest_position = str(network_article.getLane(edge_id).getLength() / 2) # TODO: para já coloco no meio da edge, futuramente colocar nas coords exatas - como o fazer?
-                ET.SubElement(additional_tag_article, 'calibrator', id=f'calib_{calib_id_article}', lane=edge_id, pos=closest_position, output=output_dir)
-                calib_id_article += 1
+                ET.SubElement(additional_tag_article, 'calibrator', id=sensor.replace('CH', 'X').replace(':', '_').replace('.', '_'), lane=edge_id, pos=closest_position, output=output_dir)
 
             # define the edges whose flow is determined by the detector
             edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()

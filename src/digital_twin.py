@@ -7,26 +7,37 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 import os, sys
 import time
 import traci
+import herepy
+import sumolib
+import requests
 import xml.etree.cElementTree as ET
 
 from .utils import load_config
 
 # TODO: Initialization of the variables
-# - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element
-# - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values
-
-def initialize_variables(network_file):
+# - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
+# - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
+def initialize_variables(network_file, additionals_file):
+    # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))
     root = tree.getroot()
 
-    # initialize the variables for each router (permanent distribution)
     routers, perm_dists = {}, {}
     router_pois = [poi for poi in root.findall('poi') if poi.get('type') == 'router']
     for poi in router_pois:
         routers[poi.get('id')] = [poi.get('x'), poi.get('y'), poi.get('name')]
         perm_dists[poi.get('id')] = [[[],[],[0]]]
 
-    return routers, perm_dists
+    # initialize the variables for each sensor
+    add_tree = ET.parse(additionals_file)
+    add_root = add_tree.getroot()
+
+    calibrators = {} # id : [old_values, new_values, lane]
+    calibrators_elems = [calibrator for calibrator in add_root.findall('calibrator')]
+    for calibrator in calibrators_elems:
+        calibrators[calibrator.get('id')] = [[0,0,0,0], [0,0,0,0], calibrator.get('lane')]
+
+    return routers, perm_dists, calibrators
 
 def prepare_sumo(config):
     if 'SUMO_HOME' in os.environ:
@@ -40,13 +51,68 @@ def prepare_sumo(config):
 
     return [sumo_binary, '-c', sumo_config, '--seed', str(28815), '--start', '1', '--quit-on-end', '1']
 
+def get_traffic_intensity(api_key, coordinates):
+    base_url = 'https://traffic.ls.hereapi.com/traffic/6.3/flow.json'
+    params = {
+        'apiKey': api_key,
+        'bbox': f'{coordinates[0]},{coordinates[1]},{coordinates[2]},{coordinates[3]}',
+    }
+
+    print(base_url, '-', params)
+
+    response = requests.get(base_url, params=params)
+    data = response.json()
+
+    print('RESPONSE DATA')
+    print(data)
+
+    if 'RWS' in data and 'RW' in data['RWS'][0] and 'CF' in data['RWS'][0]['RW'][0]:
+        jam_factor = data['RWS'][0]['RW'][0]['CF'][0]['JF']
+        return jam_factor
+    else:
+        return None
+
+def experimentar_api():
+    network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
+
+    # get the latitude and longitude of the nodes of a given edge in SUMO
+    coords_from = network.getEdge('915252792').getFromNode().getCoord()
+    coords_to = network.getEdge('915252792').getToNode().getCoord()
+
+    # convert the coords to latiutude and longitude
+    latitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[1]
+    longitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[0]
+    latitude_end = network.convertXY2LonLat(coords_to[0], coords_to[1])[1]
+    longitude_end = network.convertXY2LonLat(coords_to[0], coords_to[1])[0]
+
+    print(latitude_start, longitude_start)
+    print(latitude_end, longitude_end)
+
+    here_api = herepy.TrafficApi('jVB_JfWYklIufkIHgaEGNg')
+    start_coord = [latitude_start, longitude_start]
+    end_coord = [latitude_end, longitude_end]
+
+    print(f'{start_coord}-{end_coord}')
+
+    api_key = 'SGLZFO2SFShUtNG4aGSjjBrR1W-VjqYFKrvDMRxXfuk'
+    coordinates = [start_coord[0], start_coord[1], end_coord[0], end_coord[1]]
+    traffic_intensity = get_traffic_intensity(api_key, coordinates)
+    if traffic_intensity is not None:
+        print(f"Traffic Intensity (Jam Factor) for Coordinates {coordinates}: {traffic_intensity}")
+    else:
+        print("Unable to retrieve traffic intensity for the specified location.")
+
+    print(f"Average Traffic Intensity: {traffic_intensity}")
 
 if __name__ == '__main__':
     config = load_config()
     sumo_cmd = prepare_sumo(config)
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
-    routers, perm_dists = initialize_variables(network_file)
-    
+    additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
+    routers, perm_dists, calibrators = initialize_variables(network_file, additionals_file)
+
+    # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
+
     current_hour = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
