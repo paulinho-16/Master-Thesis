@@ -22,7 +22,7 @@ def convert_coords_to_SUMO(network, coords):
 
     return network.convertLonLat2XY(long, lat)
 
-def get_closest_edge(network, x, y, radius):
+def get_closest_edge(network, x, y, radius): # TODO: passar a usar apenas a get_closest_lane, é preciso adaptar os dados da VCI para lanes (coordenadas para cada uma)
     edges = network.getNeighboringEdges(x, y, radius)
 
     if len(edges) > 0:
@@ -33,10 +33,25 @@ def get_closest_edge(network, x, y, radius):
         return closestEdge.getID()
     else:
         raise Exception()
+    
+def get_closest_lane(network, x, y, radius):
+    lanes = network.getNeighboringLanes(x, y, radius)
 
-def gen_calibrators(df, network):
+    if len(lanes) > 0:
+        distancesAndLanes = [(dist, lane) for lane, dist in lanes]
+        distancesAndLanes.sort(key=operator.itemgetter(0))
+        _, closestLane = distancesAndLanes[0]
+
+        return closestLane.getID()
+    else:
+        raise Exception()
+
+    return None, None
+
+def gen_calibrators(df, network, network_article):
     radius = 50
     additional_tag = ET.Element('additional')
+    additional_tag_article = ET.Element('additional')
 
     output_dir = config.get('dir', 'OUTPUT', fallback='./output')
     Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -45,23 +60,32 @@ def gen_calibrators(df, network):
     with open(coverage_file, 'w') as f:
         coverage = ''
         calib_id = 1
+        calib_id_article = 1
 
         for _, row in df.iterrows():
+            network_name = row['Network']
             sensor = row['Equipamento']
             coords = row['coordenadas']
 
-            x, y = convert_coords_to_SUMO(network, coords)
+            x, y = convert_coords_to_SUMO(network, coords) if network_name == 'VCI' else convert_coords_to_SUMO(network_article, coords)
             try:
-                edge_id = get_closest_edge(network, x, y, radius)
+                edge_id = get_closest_edge(network, x, y, radius) if network_name == 'VCI' else get_closest_lane(network_article, x, y, radius)
             except Exception:
                 print(f"No edges found within radius for the coordinates {coords}!")
                 continue
             
             # TODO: Instead of a fixed pos, look for the closest node to the detector
-            ET.SubElement(additional_tag, 'calibrator', id=f'calib_{calib_id}', edge=edge_id, pos='20', output=f'{output_dir}/calibrator_{calib_id}.xml')
+            # TODO: como especificar o ficheiro de output? f'{output_dir}/calibrator_{calib_id}.xml' dá erro...
+            if network_name == 'VCI':
+                ET.SubElement(additional_tag, 'calibrator', id=f'calib_{calib_id}', edge=edge_id, pos='20', output=output_dir)
+                calib_id += 1
+            else:
+                closest_position = str(network_article.getLane(edge_id).getLength() / 2) # TODO: para já coloco no meio da edge, futuramente colocar nas coords exatas - como o fazer?
+                ET.SubElement(additional_tag_article, 'calibrator', id=f'calib_{calib_id_article}', lane=edge_id, pos=closest_position, output=output_dir)
+                calib_id_article += 1
 
             # define the edges whose flow is determined by the detector
-            edge = network.getEdge(edge_id)
+            edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
             coverage += f'\n### Edges covered by sensor {sensor}:\n'
             coverage += f'{edge_id}\n'
 
@@ -69,22 +93,23 @@ def gen_calibrators(df, network):
             following_edges = list(edge.getOutgoing().keys())
 
             while len(previous_edges) == 1:
-                if len(list(previous_edges[0].getOutgoing().keys())) > 1:
+                outgoing_edges = list(previous_edges[0].getOutgoing().keys())
+                if len(outgoing_edges) > 1:
                     break
                 coverage += f'{previous_edges[0].getID()}\n'
                 previous_edges = list(previous_edges[0].getIncoming().keys())
 
             while len(following_edges) == 1:
-                if len(list(following_edges[0].getIncoming().keys())) > 1:
+                incoming_edges = list(following_edges[0].getIncoming().keys())
+                if len(incoming_edges) > 1:
                     break
                 coverage += f'{following_edges[0].getID()}\n'
                 following_edges = list(following_edges[0].getOutgoing().keys())
 
-            calib_id += 1
-
         f.write(coverage.strip())
 
     write_xml(additional_tag, config.get('sumo', 'CALIBRATORS', fallback='./sumo/calibrators.add.xml'))
+    write_xml(additional_tag_article, config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml'))
 
 def prepare_view():
     view_file = config.get('sumo', 'VIEW', fallback='./sumo/vci.view.xml')
@@ -157,7 +182,8 @@ if __name__ == '__main__':
     config = load_config()
     df = pd.read_excel(config.get('sensors', 'LOCATIONS', fallback='./data/sensor_locations.xlsx'))
     network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
+    network_article = sumolib.net.readNet(config.get('nodes', 'NODE_ARTICLE', fallback='Article,./nodes/no_artigo.net.xml').split(',')[1])
 
-    gen_calibrators(df, network)
+    gen_calibrators(df, network, network_article)
     prepare_view()
     prepare_data()

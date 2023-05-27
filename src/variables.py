@@ -225,7 +225,7 @@ def calculate_intermediate_variables(network, node_name, process_list, variable_
             pending_edges.append(edge)
             print(f"Edge {edge.getID()} has no variable assigned.")
 
-    return variable_count, list(equations)
+    return variable_count, sorted(equations)
 
 def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
     additional_tag = ET.Element('additional')
@@ -326,7 +326,7 @@ def reduce_equations(equations):
     removed_rhs_equations = []
     new_equations = []
 
-    print(f'Initial equations: {equations}')
+    print(f'Initial equations ({len(equations)}): {equations}')
 
     # Simplify the equations
     for eq in equations:
@@ -335,11 +335,15 @@ def reduce_equations(equations):
         lhs_expr = sympy.sympify(old_lhs)
 
         lhs_var = lhs_expr.free_symbols.pop()
+        if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
+            print(f'PROCESSING {lhs_var.name}')
         for eq2 in equations:
             new_lhs, rhs = eq2.split('=')
             rhs_expr = sympy.sympify(rhs)
             rhs_vars = rhs_expr.free_symbols
             if eq != eq2 and lhs_var in rhs_vars and lhs_var.name == highest_variable(eq):
+                if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
+                    print(f'ENTROU CA DENTRO COM {lhs_var.name}')
                 new_rhs = rhs.replace(lhs_var.name, old_rhs.strip())
                 new_eq = f'{new_lhs}={new_rhs}'
                 simplified_equations.append(new_eq)
@@ -347,6 +351,7 @@ def reduce_equations(equations):
                 simplified = True
         
         if not simplified and eq not in removed_rhs_equations:
+            print(f'REMOVED {removed_rhs_equations}')
             simplified_equations.append(eq)
 
     # Format the equations
@@ -377,7 +382,7 @@ def reduce_equations(equations):
 
         new_equations.append(f'{str(new_eq.lhs)} = {str(new_eq.rhs)}')
 
-    print(f'Simplified equations: {new_equations}')
+    print(f'Simplified equations ({len(new_equations)}): {new_equations}')
 
     return new_equations
 
@@ -395,12 +400,6 @@ def process_node(node_name, network_file, nsf, ef, sensors_coverage, node_sensor
     for sensor in node_sensors[node_name]:
         nsf.write(f'{sensor}\n')
     nsf.write('\n')
-
-    if node_name == 'Article':
-        patterns = {'x12': 'q12', 'x4': 'q4', 'x10': 'q10', 'x5': 'q5', 'x8': 'q8', 'x7': 'q7'} # TODO: if I integrate the article sensors coords, remove this conditional block
-        for i, eq in enumerate(equations):
-            for pattern, replacement in patterns.items():
-                equations[i] = equations[i].replace(pattern, replacement)
 
     equations = reduce_equations(equations)
 

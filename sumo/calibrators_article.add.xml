@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<additional>
+	<calibrator id="calib_1" lane="ES_N14_0" pos="100.6" output="./output" />
+	<calibrator id="calib_2" lane="ES_N14_1" pos="100.6" output="./output" />
+	<calibrator id="calib_3" lane="N_ES149_1" pos="210.22" output="./output" />
+	<calibrator id="calib_4" lane="N_ES149_0" pos="210.22" output="./output" />
+	<calibrator id="calib_5" lane="E_NS6_0" pos="194.255" output="./output" />
+	<calibrator id="calib_6" lane="E_NS6_1" pos="194.255" output="./output" />
+	<calibrator id="calib_7" lane="SN_E4_1" pos="100.47" output="./output" />
+	<calibrator id="calib_8" lane="SN_E4_0" pos="100.47" output="./output" />
+	<calibrator id="calib_9" lane="S_NE11_0" pos="116.04" output="./output" />
+	<calibrator id="calib_10" lane="S_NE11_1" pos="116.04" output="./output" />
+	<calibrator id="calib_11" lane="S_NE11_2" pos="116.04" output="./output" />
+	<calibrator id="calib_12" lane="EN_S3_2" pos="141.905" output="./output" />
+	<calibrator id="calib_13" lane="EN_S3_1" pos="141.905" output="./output" />
+	<calibrator id="calib_14" lane="EN_S3_0" pos="141.905" output="./output" />
+</additional>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="../nodes/no_artigo.net.xml" />
+        <!-- <route-files value="osm.bus.trips.xml,osm.passenger.trips.xml,osm.truck.trips.xml"/> -->
+        <additional-files value="calibrators_article.add.xml" />
+    </input>
+
+    <time>
+        <step-length value="0.25" />
+    </time>
+
+    <processing>
+        <!-- <ignore-route-errors value="true"/> -->
+        <step-method.ballistic value="true" />
+        <collision.mingap-factor value="0" />
+    </processing>
+
+    <!-- <routing>
+        <device.rerouting.adaptation-steps value="18"/>
+        <device.rerouting.adaptation-interval value="10"/>
+    </routing> -->
+
+    <gui_only>
+        <gui-settings-file value="vci.view.xml" />
+    </gui_only>
+
+    <type id="highway.motorway">
+        <restriction vClass="truck" speed="27.78" />
+    </type>
+
+    <report>
+        <verbose value="true" />
+        <duration-log.statistics value="true" />
+        <log value="sim_article.log"/>
+        <!-- <no-step-log value="true" /> -->
+    </report>
+
+</configuration>
