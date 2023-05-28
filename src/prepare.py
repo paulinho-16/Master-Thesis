@@ -71,14 +71,14 @@ def gen_calibrators(df, network, network_article):
                 print(f"No edges found within radius for the coordinates {coords}!")
                 continue
             
-            # TODO: Instead of a fixed pos, look for the closest node to the detector
-            # TODO: como especificar o ficheiro de output? f'{output_dir}/calibrator_{calib_id}.xml' dá erro...
+            # TODO: Instead of a fixed pos, look for the closest pos to the sensor coords
+            output_file = f'{output_dir}/calibrator_{calib_id}.xml' if network_name == 'VCI' else f'{output_dir}/calibrator_{sensor.replace("CH", "X").replace(":", "_").replace(".", "_")}.xml'
             if network_name == 'VCI':
-                ET.SubElement(additional_tag, 'calibrator', id=f'calib_{calib_id}', edge=edge_id, pos='20', output=output_dir)
+                ET.SubElement(additional_tag, 'calibrator', id=f'calib_{calib_id}', edge=edge_id, pos='20', output=output_file)
                 calib_id += 1
             else:
                 closest_position = str(network_article.getLane(edge_id).getLength() / 2) # TODO: para já coloco no meio da edge, futuramente colocar nas coords exatas - como o fazer?
-                ET.SubElement(additional_tag_article, 'calibrator', id=sensor.replace('CH', 'X').replace(':', '_').replace('.', '_'), lane=edge_id, pos=closest_position, output=output_dir)
+                ET.SubElement(additional_tag_article, 'calibrator', id=sensor.replace('CH', 'X').replace(':', '_').replace('.', '_'), lane=edge_id, pos=closest_position, output=output_file)
 
             # define the edges whose flow is determined by the detector
             edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()

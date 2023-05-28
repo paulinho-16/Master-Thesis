@@ -5,6 +5,7 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 """
 
 import os, re, sys, time
+import numpy as np
 import pandas as pd
 import traci
 import herepy
@@ -38,7 +39,7 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
     for calibrator in calibrators_elems:
         calibrators[calibrator.get('id')] = [[0,0,0,0], [0,0,0,0], calibrator.get('lane')]
 
-    # initialize the variables for the flow in and out of each entry and exit
+    # store the IDs of the vehicles that entered and exited the network
     oldVehIDs = {} # node_id : ('in'/'out', [vehIDs])
     with open(entries_exits_file, 'r') as eef:
         pattern = fr'### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]'
@@ -52,8 +53,10 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
                 oldVehIDs[node] = ('in', [])
             for node in exit_nodes:
                 oldVehIDs[node] = ('out', [])
+        else:
+            raise Exception(f'Node {node_name} not found in the `entries_exits.md` file')
 
-    return routers, perm_dists, calibrators, oldVehIDs
+    return entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs
 
 def get_calibrators_data(calibrators, data_file):
     calibrators_dfs = {} # id : dataframe
@@ -65,7 +68,7 @@ def get_calibrators_data(calibrators, data_file):
 
     return df_timestamp, calibrators_dfs
 
-def prepare_sumo(config):
+def prepare_sumo(config, node_name):
     if 'SUMO_HOME' in os.environ:
         tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
         sys.path.append(tools)
@@ -73,9 +76,17 @@ def prepare_sumo(config):
         sys.exit("Please declare environment variable 'SUMO_HOME'")
 
     sumo_binary = config.get('sumo', 'BINARY', fallback='sumo-gui.exe')
-    sumo_config = config.get('sumo', 'CONFIG', fallback='./sumo/vci.sumocfg')
+    sumo_config = config.get('sumo', 'CONFIG_ARTICLE', fallback='./sumo/article.sumocfg') if node_name == 'Article' else config.get('sumo', 'CONFIG', fallback='./sumo/vci.sumocfg')
 
     return [sumo_binary, '-c', sumo_config, '--seed', str(28815), '--start', '1', '--quit-on-end', '1']
+
+def reset_flow_speed_min(entry_nodes, exit_nodes):
+    # reset the variables for the flow and speed in each entry and exit during the current minute
+    flow_speed_min = {} # node_id : (flow, speed)
+    for node in entry_nodes + exit_nodes:
+        flow_speed_min[node] = (0, 0)
+
+    return flow_speed_min
 
 def get_traffic_intensity(api_key, coordinates):
     base_url = 'https://traffic.ls.hereapi.com/traffic/6.3/flow.json'
@@ -132,13 +143,13 @@ def experimentar_api():
 
 if __name__ == '__main__':
     config = load_config()
-    sumo_cmd = prepare_sumo(config)
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
-    routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
+    entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
     timestamp_hours, calibrators_data = get_calibrators_data(calibrators, data_file)
+    sumo_cmd = prepare_sumo(config, node_name)
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
 
@@ -153,6 +164,9 @@ if __name__ == '__main__':
     while current_hour < total_hours:
         print(f"Running simulation for hour {current_hour + 1} of {total_hours}")
         traci.start(sumo_cmd)
+
+        controlFile = np.zeros((1, len(oldVehIDs)*2 + 1)) # controlFile -> guarda os resultados periodicamente? -> o segundo número é o dobro de entradas e saídas, mais 1 para o TTS
+        flow_speed_min = reset_flow_speed_min(entry_nodes, exit_nodes)
 
         step = 0
         while step <= total_steps:

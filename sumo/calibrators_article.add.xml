@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
-	<calibrator id="X_0272_01" lane="ES_N14_0" pos="100.6" output="./output" />
-	<calibrator id="X_0272_02" lane="ES_N14_1" pos="100.6" output="./output" />
-	<calibrator id="X_0272_03" lane="N_ES149_1" pos="210.22" output="./output" />
-	<calibrator id="X_0272_04" lane="N_ES149_0" pos="210.22" output="./output" />
-	<calibrator id="X_0224_01" lane="E_NS6_0" pos="194.255" output="./output" />
-	<calibrator id="X_0224_02" lane="E_NS6_1" pos="194.255" output="./output" />
-	<calibrator id="X_0224_03" lane="SN_E4_1" pos="100.47" output="./output" />
-	<calibrator id="X_0224_04" lane="SN_E4_0" pos="100.47" output="./output" />
-	<calibrator id="X_0200_01" lane="S_NE11_0" pos="116.04" output="./output" />
-	<calibrator id="X_0200_02" lane="S_NE11_1" pos="116.04" output="./output" />
-	<calibrator id="X_0200_03" lane="S_NE11_2" pos="116.04" output="./output" />
-	<calibrator id="X_0200_04" lane="EN_S3_2" pos="141.905" output="./output" />
-	<calibrator id="X_0200_05" lane="EN_S3_1" pos="141.905" output="./output" />
-	<calibrator id="X_0200_06" lane="EN_S3_0" pos="141.905" output="./output" />
+	<calibrator id="X_0272_01" lane="ES_N14_0" pos="100.6" output="./output/calibrator_X_0272_01.xml" />
+	<calibrator id="X_0272_02" lane="ES_N14_1" pos="100.6" output="./output/calibrator_X_0272_02.xml" />
+	<calibrator id="X_0272_03" lane="N_ES149_1" pos="210.22" output="./output/calibrator_X_0272_03.xml" />
+	<calibrator id="X_0272_04" lane="N_ES149_0" pos="210.22" output="./output/calibrator_X_0272_04.xml" />
+	<calibrator id="X_0224_01" lane="E_NS6_0" pos="194.255" output="./output/calibrator_X_0224_01.xml" />
+	<calibrator id="X_0224_02" lane="E_NS6_1" pos="194.255" output="./output/calibrator_X_0224_02.xml" />
+	<calibrator id="X_0224_03" lane="SN_E4_1" pos="100.47" output="./output/calibrator_X_0224_03.xml" />
+	<calibrator id="X_0224_04" lane="SN_E4_0" pos="100.47" output="./output/calibrator_X_0224_04.xml" />
+	<calibrator id="X_0200_01" lane="S_NE11_0" pos="116.04" output="./output/calibrator_X_0200_01.xml" />
+	<calibrator id="X_0200_02" lane="S_NE11_1" pos="116.04" output="./output/calibrator_X_0200_02.xml" />
+	<calibrator id="X_0200_03" lane="S_NE11_2" pos="116.04" output="./output/calibrator_X_0200_03.xml" />
+	<calibrator id="X_0200_04" lane="EN_S3_2" pos="141.905" output="./output/calibrator_X_0200_04.xml" />
+	<calibrator id="X_0200_05" lane="EN_S3_1" pos="141.905" output="./output/calibrator_X_0200_05.xml" />
+	<calibrator id="X_0200_06" lane="EN_S3_0" pos="141.905" output="./output/calibrator_X_0200_06.xml" />
 </additional>
