@@ -4,8 +4,8 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 
 """
 
-import os, re, sys
-import time
+import os, re, sys, time
+import pandas as pd
 import traci
 import herepy
 import sumolib
@@ -41,7 +41,7 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
     # initialize the variables for the flow in and out of each entry and exit
     oldVehIDs = {} # node_id : ('in'/'out', [vehIDs])
     with open(entries_exits_file, 'r') as eef:
-        pattern = fr"### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]"
+        pattern = fr'### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]'
         match = re.search(pattern, eef.read(), re.DOTALL)
 
         if match:
@@ -54,6 +54,16 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
                 oldVehIDs[node] = ('out', [])
 
     return routers, perm_dists, calibrators, oldVehIDs
+
+def get_calibrators_data(calibrators, data_file):
+    calibrators_dfs = {} # id : dataframe
+    df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
+    
+    for calibrator_id in calibrators.keys():
+        dataframe = pd.read_excel(data_file, sheet_name=calibrator_id).values.tolist()
+        calibrators_dfs[calibrator_id] = dataframe
+
+    return df_timestamp, calibrators_dfs
 
 def prepare_sumo(config):
     if 'SUMO_HOME' in os.environ:
@@ -95,7 +105,7 @@ def experimentar_api():
     coords_from = network.getEdge('915252792').getFromNode().getCoord()
     coords_to = network.getEdge('915252792').getToNode().getCoord()
 
-    # convert the coords to latiutude and longitude
+    # convert the coords to latitude and longitude
     latitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[1]
     longitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[0]
     latitude_end = network.convertXY2LonLat(coords_to[0], coords_to[1])[1]
@@ -126,11 +136,13 @@ if __name__ == '__main__':
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
+    data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
     routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
+    timestamp_hours, calibrators_data = get_calibrators_data(calibrators, data_file)
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
 
-    current_hour = 0
+    current_hour = current_min = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
     time_sleep = int(config.get('params', 'TIME_SLEEP', fallback='0')) # slow down or speed up the simulation
@@ -141,8 +153,8 @@ if __name__ == '__main__':
     while current_hour < total_hours:
         print(f"Running simulation for hour {current_hour + 1} of {total_hours}")
         traci.start(sumo_cmd)
-        step = 0
 
+        step = 0
         while step <= total_steps:
             traci.simulationStep()
 
@@ -178,7 +190,7 @@ if __name__ == '__main__':
                 
                 # TODO: update TTS
                 # TODO: generate (calibrate) traffic flows - set flows of the calibrators (for cars and trucks)
-                # TODO: update timeID (number of minutes?)
+                current_min += 1
 
                 # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations (but how many routers, and where?)
 
