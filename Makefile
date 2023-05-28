@@ -22,7 +22,7 @@ NODE_ARTICLE_FILE = $(NODES_PATH)\$(NODE_ARTICLE_FILENAME)
 
 .PHONY: all
 
-all: prepare run
+all: prepare variables solve run
 
 # TODO: Run the netconvert command on all node networks
 prepare:

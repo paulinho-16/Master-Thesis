@@ -335,15 +335,15 @@ def reduce_equations(equations):
         lhs_expr = sympy.sympify(old_lhs)
 
         lhs_var = lhs_expr.free_symbols.pop()
-        if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
-            print(f'PROCESSING {lhs_var.name}')
+        # if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
+            # print(f'PROCESSING {lhs_var.name}')
         for eq2 in equations:
             new_lhs, rhs = eq2.split('=')
             rhs_expr = sympy.sympify(rhs)
             rhs_vars = rhs_expr.free_symbols
             if eq != eq2 and lhs_var in rhs_vars and lhs_var.name == highest_variable(eq):
-                if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
-                    print(f'ENTROU CA DENTRO COM {lhs_var.name}')
+                # if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
+                    # print(f'ENTROU CA DENTRO COM {lhs_var.name}')
                 new_rhs = rhs.replace(lhs_var.name, old_rhs.strip())
                 new_eq = f'{new_lhs}={new_rhs}'
                 simplified_equations.append(new_eq)
@@ -351,7 +351,7 @@ def reduce_equations(equations):
                 simplified = True
         
         if not simplified and eq not in removed_rhs_equations:
-            print(f'REMOVED {removed_rhs_equations}')
+            # print(f'REMOVED {removed_rhs_equations}')
             simplified_equations.append(eq)
 
     # Format the equations
@@ -386,13 +386,18 @@ def reduce_equations(equations):
 
     return new_equations
 
-def process_node(node_name, network_file, nsf, ef, sensors_coverage, node_sensors):
+def process_node(node_name, network_file, nsf, eef, ef, sensors_coverage, node_sensors):
     network = sumolib.net.readNet(network_file)
 
     entry_nodes, exit_nodes = get_entry_exit_nodes(network.getNodes())
     print(f"Found {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes.")
     print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
     print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
+
+    # register the entry and exit nodes in the `entries_exits.md` file
+    eef.write(f'### Entry and exit nodes of {node_name}:\n')
+    eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
+    eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
 
     variable_count, equations = gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
 
@@ -421,15 +426,16 @@ if __name__ == '__main__':
     config = load_config()
     node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
+    entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
 
     node_sensors = {}
     sensors_coverage = get_sensors_coverage(coverage_file)
 
-    with open(node_sensors_file, 'w') as nsf, open(equations_file, 'w') as ef:
+    with open(node_sensors_file, 'w') as nsf, open(entries_exits_file, 'w') as eef, open(equations_file, 'w') as ef:
         for var, value in list(config.items('nodes')):
             if var.startswith('node_'):
                 node_name, network_file = value.split(',')
                 node_sensors[node_name] = []
                 print(f"::: Processing node {node_name} :::\n")
-                process_node(node_name, network_file, nsf, ef, sensors_coverage, node_sensors)
+                process_node(node_name, network_file, nsf, eef, ef, sensors_coverage, node_sensors)

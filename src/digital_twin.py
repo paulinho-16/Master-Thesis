@@ -17,6 +17,7 @@ from .utils import load_config
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
 # - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
+# - for each entry and exit, set an empty array
 def initialize_variables(network_file, additionals_file):
     # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))

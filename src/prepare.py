@@ -83,7 +83,7 @@ def gen_calibrators(df, network, network_article):
             # define the edges whose flow is determined by the detector
             edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
             coverage += f'\n### Edges covered by sensor {sensor}:\n'
-            coverage += f'{edge_id}\n'
+            coverage += f'{edge.getID()}\n'
 
             previous_edges = list(edge.getIncoming().keys())
             following_edges = list(edge.getOutgoing().keys())
