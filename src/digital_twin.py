@@ -4,7 +4,7 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 
 """
 
-import os, sys
+import os, re, sys
 import time
 import traci
 import herepy
@@ -17,8 +17,8 @@ from .utils import load_config
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
 # - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
-# - for each entry and exit, set an empty array
-def initialize_variables(network_file, additionals_file):
+# - for each entry and exit, set an empty array -> done
+def initialize_variables(node_name, network_file, additionals_file, entries_exits_file):
     # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))
     root = tree.getroot()
@@ -38,7 +38,22 @@ def initialize_variables(network_file, additionals_file):
     for calibrator in calibrators_elems:
         calibrators[calibrator.get('id')] = [[0,0,0,0], [0,0,0,0], calibrator.get('lane')]
 
-    return routers, perm_dists, calibrators
+    # initialize the variables for the flow in and out of each entry and exit
+    oldVehIDs = {} # node_id : ('in'/'out', [vehIDs])
+    with open(entries_exits_file, 'r') as eef:
+        pattern = fr"### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]"
+        match = re.search(pattern, eef.read(), re.DOTALL)
+
+        if match:
+            entry_nodes = [node.strip("'") for node in match.group(1).split(', ')]
+            exit_nodes = [node.strip("'") for node in match.group(2).split(', ')]
+
+            for node in entry_nodes:
+                oldVehIDs[node] = ('in', [])
+            for node in exit_nodes:
+                oldVehIDs[node] = ('out', [])
+
+    return routers, perm_dists, calibrators, oldVehIDs
 
 def prepare_sumo(config):
     if 'SUMO_HOME' in os.environ:
@@ -110,7 +125,8 @@ if __name__ == '__main__':
     sumo_cmd = prepare_sumo(config)
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
-    routers, perm_dists, calibrators = initialize_variables(network_file, additionals_file)
+    entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
+    routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
 
