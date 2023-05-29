@@ -14,6 +14,7 @@ import requests
 import xml.etree.cElementTree as ET
 
 from .utils import load_config
+import logic_functions as fn
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
@@ -40,7 +41,7 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
         calibrators[calibrator.get('id')] = [[0,0,0,0], [0,0,0,0], calibrator.get('lane')]
 
     # store the IDs of the vehicles that entered and exited the network
-    oldVehIDs = {} # node_id : ('in'/'out', [vehIDs])
+    oldVehIDs = {} # node_id : [vehIDs]
     with open(entries_exits_file, 'r') as eef:
         pattern = fr'### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]'
         match = re.search(pattern, eef.read(), re.DOTALL)
@@ -49,10 +50,8 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
             entry_nodes = [node.strip("'") for node in match.group(1).split(', ')]
             exit_nodes = [node.strip("'") for node in match.group(2).split(', ')]
 
-            for node in entry_nodes:
-                oldVehIDs[node] = ('in', [])
-            for node in exit_nodes:
-                oldVehIDs[node] = ('out', [])
+            for node in entry_nodes + exit_nodes:
+                oldVehIDs[node] = []
         else:
             raise Exception(f'Node {node_name} not found in the `entries_exits.md` file')
 
@@ -144,6 +143,7 @@ def experimentar_api():
 if __name__ == '__main__':
     config = load_config()
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    network = sumolib.net.readNet(network_file)
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
@@ -173,9 +173,19 @@ if __name__ == '__main__':
             traci.simulationStep()
 
             if step % (1/step_length) == 0: # a second has passed
-                # TODO: update the flow in variables for each entry on the network
-                # TODO: update the flow out variables for each exit on the network
-                pass
+                # TODO: update the flow in variables for each entry on the network -> done
+                for node in entry_nodes:
+                    start_edge = network.getNode(node).getOutgoing()[0]
+                    next_edge = start_edge.getToNode().getOutgoing()[0]
+                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
+                    flow_speed_min[node] = (flow_speed_min[node][0] + flow, flow_speed_min[node][1] + speed) # TODO: somar speed porquê?
+
+                # TODO: update the flow out variables for each exit on the network -> done
+                for node in exit_nodes:
+                    next_edge = network.getNode(node).getIncoming()[0]
+                    start_edge = next_edge.getFromNode().getIncoming()[0]
+                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
+                    flow_speed_min[node] = (flow_speed_min[node][0] + flow, flow_speed_min[node][1] + speed) # TODO: somar speed porquê?
 
             if step % (60 * (1/step_length)) == 0: # a minute has passed
                 # TODO: # store locally (in pandas dataframe) simulation data recorded during the last minute
