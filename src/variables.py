@@ -8,12 +8,13 @@ It also generates the POIs for the routers of the network.
 
 import re
 import sympy
+import pickle
 import sumolib
 import collections
 import xml.etree.cElementTree as ET
 from shapely.geometry import LineString
 
-from .utils import load_config, remove_chars, write_xml
+from .utils import load_config, remove_chars, write_xml, get_sensors_coverage
 
 def get_entry_exit_nodes(nodes):
     entry_nodes = []
@@ -42,20 +43,6 @@ def get_entry_exit_nodes(nodes):
                         exit_nodes.append(node)
     
     return entry_nodes, exit_nodes
-
-def get_sensors_coverage(coverage_file):
-        sensors_coverage = {} # sensor : [edges]
-        with open(coverage_file, 'r') as f:
-            lines = f.readlines()
-
-            for line in lines:
-                if line.startswith('###'):
-                    sensor = line.split('sensor')[-1].strip()[:-1]
-                    sensors_coverage[sensor] = []
-                elif line != '\n':
-                    sensors_coverage[sensor].append(line.strip())
-
-        return sensors_coverage
 
 def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count):
     variable = f'x{variable_count}'
@@ -183,7 +170,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
     
     return variable_count, router_count, pending_merges
 
-def calculate_intermediate_variables(network, node_name, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag):
+def calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag):
     equations = set()
     router_count = 1
     pending_merges = []
@@ -225,9 +212,13 @@ def calculate_intermediate_variables(network, node_name, process_list, variable_
             pending_edges.append(edge)
             print(f"Edge {edge.getID()} has no variable assigned.")
 
+    # register the variables assignments in a pickle file
+    with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'wb') as f:
+        pickle.dump(variables, f)
+
     return variable_count, sorted(equations)
 
-def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
+def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
     additional_tag = ET.Element('additional')
     variable_count = 1
     variables = {} # edge_id : {root_var: variable, lane_id : variable, ...}
@@ -288,7 +279,7 @@ def gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage,
         variable_count += 1
     
     process_list = collections.deque(process_list)
-    variable_count, equations = calculate_intermediate_variables(network, node_name, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
+    variable_count, equations = calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
 
     write_xml(additional_tag, network_file.replace('.net', '_poi'))
 
@@ -386,7 +377,7 @@ def reduce_equations(equations):
 
     return new_equations
 
-def process_node(node_name, network_file, nsf, eef, ef, sensors_coverage, node_sensors):
+def process_node(node_name, network_file, nodes_dir, nsf, eef, ef, sensors_coverage, node_sensors):
     network = sumolib.net.readNet(network_file)
 
     entry_nodes, exit_nodes = get_entry_exit_nodes(network.getNodes())
@@ -399,7 +390,7 @@ def process_node(node_name, network_file, nsf, eef, ef, sensors_coverage, node_s
     eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
     eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
 
-    variable_count, equations = gen_variables(network, node_name, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
+    variable_count, equations = gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
 
     nsf.write(f'### Sensors of {node_name}:\n')
     for sensor in node_sensors[node_name]:
@@ -428,6 +419,7 @@ if __name__ == '__main__':
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
+    nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
 
     node_sensors = {}
     sensors_coverage = get_sensors_coverage(coverage_file)
@@ -438,4 +430,4 @@ if __name__ == '__main__':
                 node_name, network_file = value.split(',')
                 node_sensors[node_name] = []
                 print(f"::: Processing node {node_name} :::\n")
-                process_node(node_name, network_file, nsf, eef, ef, sensors_coverage, node_sensors)
+                process_node(node_name, network_file, nodes_dir, nsf, eef, ef, sensors_coverage, node_sensors)

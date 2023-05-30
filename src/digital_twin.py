@@ -8,13 +8,14 @@ import os, re, sys, time
 import numpy as np
 import pandas as pd
 import traci
+import pickle
 import herepy
 import sumolib
 import requests
 import xml.etree.cElementTree as ET
 
-from .utils import load_config
-import logic_functions as fn
+from .utils import load_config, get_sensors_coverage
+import src.logic_functions as fn
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
@@ -57,6 +58,24 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
 
     return entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs
 
+def get_entry_exit_variables(entry_nodes, exit_nodes, variables):
+    entry_exit_variables = {} # edge_id : (variable, flow)
+    for node in entry_nodes:
+        edge_id = network.getNode(node).getOutgoing()[0].getID()
+        entry_exit_variables[edge_id] = (variables[edge_id]['root_var'], 0)
+    for node in exit_nodes:
+        edge_id = network.getNode(node).getIncoming()[0].getID()
+        entry_exit_variables[edge_id] = (variables[edge_id]['root_var'], 0)
+
+    return entry_exit_variables
+
+def get_calibrators_edges(network, calibrators):
+    calibrators_edges = {} # edge_id : [calibrator_id]
+    for calibrator_id, values in calibrators.items():
+        calibrators_edges.setdefault(network.getLane(values[2]).getEdge().getID(), []).append(calibrator_id)
+    
+    return calibrators_edges
+
 def get_calibrators_data(calibrators, data_file):
     calibrators_dfs = {} # id : dataframe
     df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
@@ -81,9 +100,11 @@ def prepare_sumo(config, node_name):
 
 def reset_flow_speed_min(entry_nodes, exit_nodes):
     # reset the variables for the flow and speed in each entry and exit during the current minute
-    flow_speed_min = {} # node_id : (flow, speed)
-    for node in entry_nodes + exit_nodes:
-        flow_speed_min[node] = (0, 0)
+    flow_speed_min = {} # node_id : (in/out, flow, speed)
+    for node in entry_nodes:
+        flow_speed_min[node] = ('in', 0, 0)
+    for node in exit_nodes:
+        flow_speed_min[node] = ('out', 0, 0)
 
     return flow_speed_min
 
@@ -144,16 +165,24 @@ if __name__ == '__main__':
     config = load_config()
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     network = sumolib.net.readNet(network_file)
+    coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
+    sensors_coverage = get_sensors_coverage(coverage_file)
     entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
+    calibrators_edges = get_calibrators_edges(network, calibrators)
+    nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
+    with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'rb') as f:
+        variables = pickle.load(f)
+    variables_values = {} # variable : [flow, speed]
+    entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
     timestamp_hours, calibrators_data = get_calibrators_data(calibrators, data_file)
     sumo_cmd = prepare_sumo(config, node_name)
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
 
-    current_hour = current_min = 0
+    current_hour = current_min = TTS = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
     time_sleep = int(config.get('params', 'TIME_SLEEP', fallback='0')) # slow down or speed up the simulation
@@ -178,26 +207,43 @@ if __name__ == '__main__':
                     start_edge = network.getNode(node).getOutgoing()[0]
                     next_edge = start_edge.getToNode().getOutgoing()[0]
                     flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
-                    flow_speed_min[node] = (flow_speed_min[node][0] + flow, flow_speed_min[node][1] + speed) # TODO: somar speed porquê?
+                    flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
                 # TODO: update the flow out variables for each exit on the network -> done
                 for node in exit_nodes:
                     next_edge = network.getNode(node).getIncoming()[0]
                     start_edge = next_edge.getFromNode().getIncoming()[0]
                     flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
-                    flow_speed_min[node] = (flow_speed_min[node][0] + flow, flow_speed_min[node][1] + speed) # TODO: somar speed porquê?
+                    flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
             if step % (60 * (1/step_length)) == 0: # a minute has passed
                 # TODO: # store locally (in pandas dataframe) simulation data recorded during the last minute
-
-                # TODO: understand the step>0 condition: what differs?
                 if step > 0:
-                    # TODO: for each of the main entries/exits (qX - constants I guess), get the total flow (cars + trucks)
-                    # TODO: for each of the main entries/exits (qX - constants I guess), get the speed (cars + trucks)
-                    # TODO: np.vstack of "controlFile" variable (25 values), first the main entries/exits (real/simulated values), then rounded TTS, then the remaining entries/exits
-                    # TODO: understand what TTS means and how it is updated
-                    # TODO: reset values of the flows and speedSums of the minute to zero
-                    pass
+                    # TODO: for each of the entries/exits with calibrators (qX - constants), get the total flow (cars + trucks) -> done
+                    # TODO: for each of the entries/exits with calibrators (qX - constants), get the speed (cars + trucks) -> done
+                    for edge_id in calibrators_edges.keys():
+                        variables_values[variables[edge_id]['root_var']] = [0, 0]
+                        speed_list = []
+                        for calibrator_id in calibrators_edges[edge_id]:
+                            variables_values[variables[edge_id]['root_var']][0] += calibrators[calibrator_id][1][0] + calibrators[calibrator_id][1][2] # update the flow of the variable
+                            speed_list.extend([calibrators[calibrator_id][1][1], calibrators[calibrator_id][1][3]])
+
+                        x = 0.001 + sum(s > 0 for s in speed_list)
+                        variables_values[variables[edge_id]['root_var']][1] = sum(speed_list) / x # update the speed of the variable
+
+                    # TODO: np.vstack of "controlFile" variable (25 values), first the main entries/exits (real/simulated values), then rounded TTS, then the remaining entries/exits -> done
+                    controlFile_list = []
+                    for edge_id in calibrators_edges.keys(): # save the flow values of the calibrators edges
+                        controlFile_list.extend([variables_values[variables[edge_id]['root_var']][0], flow_speed_min[node][1] * 60])
+                    controlFile_list.append(round(TTS)) # TODO: understand what TTS means and how it is updated
+                    for edge_id in entry_exit_variables.keys(): # save the flow values of the remaining entry and exit edges
+                        if not any(edge_id in lst for lst in sensors_coverage.values()):
+                            controlFile_list.extend([entry_exit_variables[edge_id][1], flow_speed_min[node][1] * 60]) # TODO: no código do artigo usa Xcomplete nalgumas vars, adaptar isso
+                    
+                    controlFile = np.vstack([controlFile, controlFile_list])
+
+                    # TODO: reset values of the flows and speedSums of the minute to zero -> done
+                    flow_speed_min = reset_flow_speed_min(entry_nodes, exit_nodes)
 
                 # TODO: fill the vectors of each detector (array of size 4) with the values read from the real data
                 # TODO: for each of the main entries/exits (qX - constants I guess), get the total flow (cars + trucks) -> repeated with the first line after the step>0 condition - maybe move up
@@ -210,7 +256,7 @@ if __name__ == '__main__':
                     # TODO: if all variables are positive, break the loop (solution found?)
                     # if np.all(Xcomplete >= 0):
                     #     break
-                    pass
+                    break
                 
                 # TODO: update TTS
                 # TODO: generate (calibrate) traffic flows - set flows of the calibrators (for cars and trucks)

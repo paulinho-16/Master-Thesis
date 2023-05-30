@@ -1,6 +1,6 @@
 # Project specific files
-
 output/
+nodes/variables_*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
