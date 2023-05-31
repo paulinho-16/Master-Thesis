@@ -1,3 +1,4 @@
+import re
 import xml.etree.cElementTree as ET
 from configparser import ConfigParser, ExtendedInterpolation
 
@@ -27,3 +28,17 @@ def get_sensors_coverage(coverage_file):
                     sensors_coverage[sensor].append(line.strip())
 
         return sensors_coverage
+
+def get_free_variables(free_variables_file):
+    free_variables = {}
+    pattern = r"### (.*?): \[(.*?)\]"
+    with open(free_variables_file, 'r') as f:
+        content = f.read()
+
+        matches = re.findall(pattern, content)
+        for match in matches:
+            node = match[0].split('of ')[-1]
+            vars = [var.strip("'") for var in match[1].split(', ')]
+            free_variables[node] = vars
+
+    return free_variables

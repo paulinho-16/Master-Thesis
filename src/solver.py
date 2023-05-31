@@ -28,7 +28,6 @@ if __name__ == '__main__':
     with open(equations_file, 'r') as f:
         lines = f.readlines()
 
-        # open free_variables.md file
         with open(free_variables_file, 'w') as fv:
             for i, line in enumerate(lines):
                 if line.startswith('###'):
@@ -39,8 +38,6 @@ if __name__ == '__main__':
 
                     variables = get_variables(equations)
                     num_variables = len(variables)
-
-                    print(variables) # TODO: apagar print
 
                     matrix = []
                     for eq in equations:
@@ -61,8 +58,8 @@ if __name__ == '__main__':
 
                         matrix.append(row)
                     
-                    for row in matrix: # TODO: apagar print
-                        print(row)
+                    # for row in matrix: # TODO: apagar print
+                    #     print(row)
 
                     # find the reduced row echelon form of the matrix
                     matrix = sympy.Matrix(matrix).rref()
@@ -71,8 +68,8 @@ if __name__ == '__main__':
                     free_variables = [variables[i] for i in range(num_variables) if i not in matrix[1]]
 
                     num_free_variables = num_variables - num_equations
-                    if len(free_variables) != num_free_variables:
+                    if len(free_variables) != num_free_variables: # TODO: corrigir para casos da VCI que não funcionam (Nó da Associação Empresarial, por exemplo)
                         raise Exception(f"Number of free variables ({len(free_variables)}) is not equal to 'num_variables - num_equations' ({num_free_variables})")
                     
-                    fv.write(f'### Equations of {node_name}: {free_variables}\n')
+                    fv.write(f'### Free variables of {node_name}: {free_variables}\n')
                     print(f"The free variables of the equation system of node {node_name} are: {free_variables}")

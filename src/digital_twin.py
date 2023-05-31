@@ -14,7 +14,7 @@ import sumolib
 import requests
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_sensors_coverage
+from .utils import load_config, get_sensors_coverage, get_free_variables
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
@@ -169,7 +169,10 @@ if __name__ == '__main__':
     additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
+    free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
     sensors_coverage = get_sensors_coverage(coverage_file)
+    free_variables = get_free_variables(free_variables_file)
+    free_variables_target = {var: 5 for var in free_variables[node_name]} # TODO: read the target values of the free variables from the Here API
     entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
     calibrators_edges = get_calibrators_edges(network, calibrators)
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
@@ -245,9 +248,21 @@ if __name__ == '__main__':
                     # TODO: reset values of the flows and speedSums of the minute to zero -> done
                     flow_speed_min = reset_flow_speed_min(entry_nodes, exit_nodes)
 
-                # TODO: fill the vectors of each detector (array of size 4) with the values read from the real data
-                # TODO: for each of the main entries/exits (qX - constants I guess), get the total flow (cars + trucks) -> repeated with the first line after the step>0 condition - maybe move up
+                # TODO: fill the vectors of each detector (array of size 4) with the values read from the real data -> done
+                for calibrator_id in calibrators.keys():
+                    for i in range(4):
+                        calibrators[calibrator_id][1][i] = calibrators_data[calibrator_id][current_min][i]
+
+                # TODO: for each of the main entries/exits (qX - constants I guess), get the total flow (cars + trucks) -> repeated with the first line after the step>0 condition - maybe move up -> done
+                for edge_id in calibrators_edges.keys():
+                    variables_values[variables[edge_id]['root_var']] = [0, 0]
+                    for calibrator_id in calibrators_edges[edge_id]:
+                        variables_values[variables[edge_id]['root_var']][0] += calibrators[calibrator_id][1][0] + calibrators[calibrator_id][1][2] # update the flow of the variable
+
                 # TODO: define the intensity levels of the free variables based on the current hour of the day
+                for var in free_variables[node_name]:
+                    free_variables_target[var] = 5 # TODO: read the target values of the free variables from the Here API and depending on the hour of the day
+
                 # TODO: apply the Simplex algorithm
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables
