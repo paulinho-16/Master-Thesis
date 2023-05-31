@@ -39,17 +39,12 @@ AEDL - A20 12+980 CT3710
 ### Sensors of Nó de Paranhos:
 AEDL - A20 12+980 CT3710
 AEDL - A20 13+890 CT3711
-A20 13+890C CV731
-A20 13+450D CV730
-AEDL - A20 13+450D PM1215
 
 ### Sensors of Nó do Amial:
 AEDL - A20 13+890 CT3711
-A20 13+890C CV731
 
 ### Sensors of Nó da Via Norte:
 AEDL - A20 15+850 CT3709
-A20 14+980C CV732
 
 ### Sensors of Nó da Associação Empresarial:
 AEDL - A20 15+850 CT3709

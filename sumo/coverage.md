@@ -177,16 +177,6 @@
 ### Edges covered by sensor A20 2+150D CV709:
 29043523
 
-### Edges covered by sensor A20 14+980C CV732:
-35044065
-479187301#1
-479192143
-
-### Edges covered by sensor A20 13+890C CV731:
-479365566-AddedOffRampEdge
-479365566
-479365565
-
 ### Edges covered by sensor A20 0+575C:
 139462593
 
@@ -204,9 +194,6 @@
 712274397#1-AddedOnRampEdge
 712274397#1-AddedOffRampEdge
 95117787#0
-
-### Edges covered by sensor A20 13+450D CV730:
-29036509
 
 ### Edges covered by sensor A1 298+680D (Norte):
 95367752#2
@@ -299,9 +286,6 @@
 ### Edges covered by sensor A1 298+680D CV714:
 95367752#2
 332930857
-
-### Edges covered by sensor AEDL - A20 13+450D PM1215:
-29036509
 
 ### Edges covered by sensor AEDL - A1 297+975C PM1208:
 95367752#1

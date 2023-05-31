@@ -134,28 +134,35 @@ def prepare_data():
             worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
             sensor_sheet = workbook.add_worksheet(worksheet_name)
 
-            df = pd.read_excel(file, sheet_name='Traffic')
+            columns = ['carFlows', 'carSpeeds', 'truckFlows', 'truckSpeeds']
+            result = pd.DataFrame(columns=columns)
+            timestamp_days = np.array([])
+            worksheets = pd.ExcelFile(f'{data_dir}/{file.name}').sheet_names
+            for sheet_name in worksheets:
+                if sheet_name.startswith('Traffic'):
+                    df = pd.read_excel(file, sheet_name=sheet_name)
 
-            # check the days for which we have sensor data
-            df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-            timestamp_days = df['Timestamp'].dt.strftime('%Y-%m-%d').unique()
+                    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+                    timestamp_days = np.append(timestamp_days, df['Timestamp'].dt.strftime('%Y-%m-%d').unique())
+
+                    df['vehicle_type'] = df['VehicleTypeId'].map({3: 'car', 4: 'car', 5: 'truck', 6: 'truck'}) # TODO: verify if the car and truck classes are correctly mapped
+                    df.set_index('Timestamp', inplace=True)
+                    grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
+
+                    result_sheet = pd.DataFrame({
+                        'carFlows': grouped['MedidasCCVDetailId'].count()['car'],
+                        'carSpeeds': grouped['Velocidade'].mean()['car'],
+                        'truckFlows': grouped['MedidasCCVDetailId'].count()['truck'],
+                        'truckSpeeds': grouped['Velocidade'].mean()['truck']
+                    })
+                    result = pd.concat([result, result_sheet], ignore_index=True)
+                    result = result.fillna(0)
+
             if days.size == 0:
                 days = timestamp_days
             elif not np.array_equal(days, timestamp_days):
                 print(f"Inconsistent timestamps in file {file.name}!")
 
-            df['vehicle_type'] = df['VehicleTypeId'].map({3: 'car', 4: 'car', 5: 'truck', 6: 'truck'}) # TODO: verify if the car and truck classes are correctly mapped
-            df.set_index('Timestamp', inplace=True)
-            grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
-
-            result = pd.DataFrame({
-                'carFlows': grouped['MedidasCCVDetailId'].count()['car'],
-                'carSpeeds': grouped['Velocidade'].mean()['car'],
-                'truckFlows': grouped['MedidasCCVDetailId'].count()['truck'],
-                'truckSpeeds': grouped['Velocidade'].mean()['truck']
-            })
-            result = result.fillna(0)
-            
             # create the sensor worksheet
             sensor_sheet.set_column('A:D', 15)
             for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
