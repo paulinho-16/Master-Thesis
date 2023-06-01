@@ -7,6 +7,7 @@ It also generates the POIs for the routers of the network.
 """
 
 import re
+import sys
 import sympy
 import pickle
 import sumolib
@@ -50,6 +51,11 @@ def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variab
         if edge_id in edges:
             variable = f'q{variable_count}'
             node_sensors[node_name].append(sensor)
+
+    if node_name == 'Article': # TODO: APAGAR - é só para ficar com a mesma numeração que o artigo
+        replacement_mapping = {'q12': 'q1', 'x17': 'x1', 'q4': 'q2', 'x22': 'x2', 'q10': 'q3', 'x14': 'x3', 'q5': 'q4', 'x15': 'x4', 'q8': 'q5', 'x18': 'x5', 'q7': 'q6', 'x23': 'x6', 'x16': 'x7', 'x21': 'x8', 'x13': 'x14', 'x2': 'x15', 'x2': 'x15', 'x24': 'x10', 'x6': 'x11', 'x3': 'x12', 'x11': 'x13', 'x1': 'x16', 'x2': 'x15'}
+        variable = replacement_mapping[variable] if variable in replacement_mapping.keys() else variable
+    
     return variable
 
 def gen_pinpoint(edge, id, type, color, additional_tag):
@@ -277,7 +283,7 @@ def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensor
             previous_edges = list(previous_edges[0].getIncoming().keys())
 
         variable_count += 1
-    
+
     process_list = collections.deque(process_list)
     variable_count, equations = calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
 
@@ -304,6 +310,27 @@ def highest_variable(equation):
 
     return highest
 
+def get_sort_key(x, coefficient):
+    if x.is_number:
+        return sys.maxsize
+    number = int(re.findall(r'\d+', str(x))[0])
+    coefficient_score = 1 if coefficient < 0 else -1
+    return coefficient_score, number
+
+def order_terms(expression):
+    terms = expression.as_coefficients_dict()
+    if all(key.is_number for key in terms.keys()): # case where there is only constants in the expression
+        return expression
+    sorted_terms = sorted(terms, key=lambda term: get_sort_key(term, terms[term]))
+
+    ordered_expr = f'{sorted_terms[0]}'
+    for term in sorted_terms[1:]:
+        coefficient = terms[term]
+        full_term = term * coefficient
+        ordered_expr += f' - {full_term*-1}' if coefficient < 0 else f' + {full_term}'
+
+    return ordered_expr
+
 def reduce_equations(equations):
     """
     Formats and simplifies a system of equations, passing constants to the right-hand side and variables to the left-hand side.
@@ -326,15 +353,11 @@ def reduce_equations(equations):
         lhs_expr = sympy.sympify(old_lhs)
 
         lhs_var = lhs_expr.free_symbols.pop()
-        # if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
-            # print(f'PROCESSING {lhs_var.name}')
         for eq2 in equations:
             new_lhs, rhs = eq2.split('=')
             rhs_expr = sympy.sympify(rhs)
             rhs_vars = rhs_expr.free_symbols
             if eq != eq2 and lhs_var in rhs_vars and lhs_var.name == highest_variable(eq):
-                # if lhs_var.name.startswith('x19') or lhs_var.name.startswith('x20'): # TODO: APAGAR
-                    # print(f'ENTROU CA DENTRO COM {lhs_var.name}')
                 new_rhs = rhs.replace(lhs_var.name, old_rhs.strip())
                 new_eq = f'{new_lhs}={new_rhs}'
                 simplified_equations.append(new_eq)
@@ -342,8 +365,11 @@ def reduce_equations(equations):
                 simplified = True
         
         if not simplified and eq not in removed_rhs_equations:
-            # print(f'REMOVED {removed_rhs_equations}')
             simplified_equations.append(eq)
+
+    for eq in removed_rhs_equations:
+        if eq in simplified_equations:
+            simplified_equations.remove(eq)
 
     # Format the equations
     for eq in simplified_equations:
@@ -371,7 +397,10 @@ def reduce_equations(equations):
         if sum(str(term).count('-') for term in new_eq.args) > sum(str(term).count('+') for term in new_eq.args):
             new_eq = sympy.Eq(-1 * new_eq.lhs, -1 * new_eq.rhs)
 
-        new_equations.append(f'{str(new_eq.lhs)} = {str(new_eq.rhs)}')
+        ordered_lhs = order_terms(new_eq.lhs)
+        ordered_rhs = order_terms(new_eq.rhs)
+
+        new_equations.append(f'{str(ordered_lhs)} = {str(ordered_rhs)}')
 
     print(f'Simplified equations ({len(new_equations)}): {new_equations}')
 

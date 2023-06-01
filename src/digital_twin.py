@@ -172,7 +172,7 @@ if __name__ == '__main__':
     free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
     sensors_coverage = get_sensors_coverage(coverage_file)
     free_variables = get_free_variables(free_variables_file)
-    free_variables_target = {var: 5 for var in free_variables[node_name]} # TODO: read the target values of the free variables from the Here API
+    free_variables_target = {var: 5 for var in free_variables[node_name][0]} # TODO: read the target values of the free variables from the Here API
     entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
     calibrators_edges = get_calibrators_edges(network, calibrators)
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
@@ -260,12 +260,15 @@ if __name__ == '__main__':
                         variables_values[variables[edge_id]['root_var']][0] += calibrators[calibrator_id][1][0] + calibrators[calibrator_id][1][2] # update the flow of the variable
 
                 # TODO: define the intensity levels of the free variables based on the current hour of the day
-                for var in free_variables[node_name]:
+                for var in free_variables[node_name][0]:
                     free_variables_target[var] = 5 # TODO: read the target values of the free variables from the Here API and depending on the hour of the day
 
                 # TODO: apply the Simplex algorithm
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables
+                    closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(variables_values, free_variables[node_name][1], free_variables[node_name][2])
+                    # closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(q1,q2,q3,q4,q5,q6, num_simplex_runs, target_idx_x6, target_idx_x11,target_idx_x12, target_idx_x14, target_idx_x15, target_idx_x16)
+                    
                     # TODO: to calculate the solution for the entire equation system (Xcomplete), define the matrices Xparticular and Xnull
 
                     # TODO: if all variables are positive, break the loop (solution found?)

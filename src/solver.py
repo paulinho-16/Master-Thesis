@@ -19,6 +19,15 @@ def get_variables(equations):
     variables = sorted(list(variables), key=lambda x: int(x[1:]))
     return variables
 
+def get_inequality_constraint_matrix(matrix, free_variables):
+    ic_matrix = []
+    for row in matrix:
+        ic_row = []
+        for index in free_variables.values():
+            ic_row.append(row[index])
+        ic_matrix.append(ic_row)
+        
+    return ic_matrix
 
 if __name__ == '__main__':
     config = load_config()
@@ -57,19 +66,25 @@ if __name__ == '__main__':
                         row.append(expr)
 
                         matrix.append(row)
-                    
-                    # for row in matrix: # TODO: apagar print
-                    #     print(row)
 
                     # find the reduced row echelon form of the matrix
                     matrix = sympy.Matrix(matrix).rref()
 
                     # find the free variables of the matrix
-                    free_variables = [variables[i] for i in range(num_variables) if i not in matrix[1]]
+                    free_variables = {} # variable : index
+                    for i in range(num_variables):
+                        if i not in matrix[1]:
+                            free_variables[variables[i]] = i
+
+                    A_ub = get_inequality_constraint_matrix(matrix[0].tolist(), free_variables)
+                    b_ub = [str(row[-1]) for row in matrix[0].tolist()]
 
                     num_free_variables = num_variables - num_equations
-                    if len(free_variables) != num_free_variables: # TODO: corrigir para casos da VCI que não funcionam (Nó da Associação Empresarial, por exemplo)
+                    if len(free_variables) != num_free_variables:
                         raise Exception(f"Number of free variables ({len(free_variables)}) is not equal to 'num_variables - num_equations' ({num_free_variables})")
                     
-                    fv.write(f'### Free variables of {node_name}: {free_variables}\n')
-                    print(f"The free variables of the equation system of node {node_name} are: {free_variables}")
+                    fv.write(f'### Free variables of {node_name}: {list(free_variables.keys())}\n')
+                    fv.write(f'Inequality constraint matrix of {node_name}: {A_ub}\n')
+                    fv.write(f'Inequality constraint vector of {node_name}: {b_ub}\n')
+                    if i != len(lines) - 1: fv.write('\n')
+                    print(f"The free variables of the equation system of node {node_name} are: {list(free_variables.keys())}")

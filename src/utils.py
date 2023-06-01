@@ -30,15 +30,15 @@ def get_sensors_coverage(coverage_file):
         return sensors_coverage
 
 def get_free_variables(free_variables_file):
-    free_variables = {}
-    pattern = r"### (.*?): \[(.*?)\]"
+    free_variables = {} # node : ([free variables], [inequality constraint matrix], [inequality constraint vector])
     with open(free_variables_file, 'r') as f:
         content = f.read()
 
-        matches = re.findall(pattern, content)
-        for match in matches:
-            node = match[0].split('of ')[-1]
-            vars = [var.strip("'") for var in match[1].split(', ')]
-            free_variables[node] = vars
+        pattern = r"### Free variables of (.+?): (\[.+?\])\nInequality constraint matrix of (.+?): (\[\[.*?\]\])\nInequality constraint vector of (.+?): (\[.+?\])"
+        matches = re.findall(pattern, content, re.DOTALL)
+        results = [(node1, eval(free_vars), node2, eval(ic_matrix), node3, eval(ic_vector)) for node1, free_vars, node2, ic_matrix, node3, ic_vector in matches]
+
+        for match in results:
+            free_variables[match[0]] = (match[1], match[3], match[5])
 
     return free_variables
