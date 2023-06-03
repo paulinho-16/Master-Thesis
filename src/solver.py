@@ -79,6 +79,30 @@ if __name__ == '__main__':
                     A_ub = get_inequality_constraint_matrix(matrix[0].tolist(), free_variables)
                     b_ub = [str(row[-1]) for row in matrix[0].tolist()]
 
+                    # build the Xparticular vector
+                    Xparticular = []
+                    b_ub_index = 0
+                    for i in range(num_variables):
+                        if i not in matrix[1]:
+                            Xparticular.append(['0'])
+                        else:
+                            Xparticular.append([b_ub[b_ub_index]])
+                            b_ub_index += 1
+
+                    # build the Xnull matrix
+                    Xnull = []
+                    A_ub_index = free_var_index = 0
+                    for i in range(num_variables):
+                        if i not in matrix[1]:
+                            new_row = [0] * len(free_variables)
+                            new_row[free_var_index] = 1
+                            Xnull.append(new_row)
+                            free_var_index += 1
+                        else:
+                            new_row = [-x for x in A_ub[A_ub_index]]
+                            Xnull.append(new_row)
+                            A_ub_index += 1
+
                     num_free_variables = num_variables - num_equations
                     if len(free_variables) != num_free_variables:
                         raise Exception(f"Number of free variables ({len(free_variables)}) is not equal to 'num_variables - num_equations' ({num_free_variables})")
@@ -86,5 +110,7 @@ if __name__ == '__main__':
                     fv.write(f'### Free variables of {node_name}: {list(free_variables.keys())}\n')
                     fv.write(f'Inequality constraint matrix of {node_name}: {A_ub}\n')
                     fv.write(f'Inequality constraint vector of {node_name}: {b_ub}\n')
+                    fv.write(f'Xparticular vector of {node_name}: {Xparticular}\n')
+                    fv.write(f'Xnull matrix of {node_name}: {Xnull}\n')
                     if i != len(lines) - 1: fv.write('\n')
                     print(f"The free variables of the equation system of node {node_name} are: {list(free_variables.keys())}")

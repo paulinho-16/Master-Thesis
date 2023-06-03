@@ -1,6 +1,7 @@
 import traci
 import numpy as np
 from sympy import sympify
+from scipy.optimize import linprog
 
 def edgeVehParameters(start_edge, next_edge, oldVehIDs): # TODO: não fazer distinção entre entry e exit nodes?
     # for small time step should capture only one veh on detector with the length of 5 [m]
@@ -25,7 +26,7 @@ def edgeVehParameters(start_edge, next_edge, oldVehIDs): # TODO: não fazer dist
         
     return flow, speed, oldVehIDs, newVehIDs
 
-def calc_inequality_constraint_vector(b_con_expr, variables_values):
+def calc_list_expr(b_con_expr, variables_values):
     b_con = []
     for i in range(len(b_con_expr)):
         if b_con_expr[i] in variables_values:
@@ -37,9 +38,52 @@ def calc_inequality_constraint_vector(b_con_expr, variables_values):
             expr = expr.subs([(symbol, variables_values[symbol][0]) for symbol in variables])
             b_con.append(int(expr))
 
-    return np.array(b_con)
+    return b_con
 
-def restrictedFreeVarRange(variables_values, A_con, b_con_expr):
+def calc_x_particular(Xparticular_expr, variables_values):
+    Xparticular = []
+    for i in range(len(Xparticular_expr)):
+        Xparticular.append(calc_list_expr(Xparticular_expr[i], variables_values))
+
+    return Xparticular
+
+def freeVarRange(variables_values, A_con, b_con, Xparticular, Xnull, num_simplex_runs):
+    X_free_range = np.zeros((len(variables_values), 1))
+
+    for i in range(num_simplex_runs):
+        c = np.array([np.random.uniform(-1,1) for _ in range(len(variables_values))])
+        res = linprog(c, A_ub=A_con, b_ub=b_con)
+        res1 = res
+
+        if res.success == True:
+            new_x = (np.round(res.x)).reshape(len(variables_values), 1)
+
+            Xnull_cols = []
+            for i in range(len(variables_values)):
+                Xnull_cols.append(np.array([[row[i]] for row in Xnull]))
+
+            Xcomplete = Xparticular.astype(np.float64)
+            for i in range(len(variables_values)):
+                Xcomplete += new_x[i] * Xnull_cols[i]
+
+            # for some unknown reason, linprog sometimes returns a solution with negative values (even if the linear program is constrained to be positive), check if this is the case and just ignore that solution
+            xx = 0
+            for kk in Xcomplete:
+                xx += kk < 0
+
+            if xx == 0:
+                if i == 0:
+                    X_free_range[:, 0] = new_x[:, 0]
+                else:
+                    X_free_range = np.hstack((X_free_range, new_x))
+            else:
+                print("Negative solution found first iteration")
+
+    return X_free_range, res1
+
+def restrictedFreeVarRange(variables_values, A_con, b_con_expr, Xparticular_expr, Xnull, num_simplex_runs):
     A_con = np.array(A_con)
-    b_con = calc_inequality_constraint_vector(b_con_expr, variables_values)
-    # TODO: continuar a desenvolver função
+    b_con = np.array(calc_list_expr(b_con_expr, variables_values))
+
+    Xparticular = np.array(calc_x_particular(Xparticular_expr, variables_values))
+    X_free_range, res1 = freeVarRange(variables_values, A_con, b_con, Xparticular, Xnull, num_simplex_runs)

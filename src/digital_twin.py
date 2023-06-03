@@ -190,6 +190,7 @@ if __name__ == '__main__':
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
     time_sleep = int(config.get('params', 'TIME_SLEEP', fallback='0')) # slow down or speed up the simulation
 
+    num_simplex_runs = int(config.get('params', 'NUM_SIMPLEX_RUNS', fallback='300'))
     step_length = float(config.get('params', 'STEP_LENGTH', fallback='0.25')) # seconds each step takes
     total_steps = total_hours * 3600 * (1/step_length)
 
@@ -266,7 +267,7 @@ if __name__ == '__main__':
                 # TODO: apply the Simplex algorithm
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables
-                    closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(variables_values, free_variables[node_name][1], free_variables[node_name][2])
+                    closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(variables_values, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], free_variables[node_name][4], num_simplex_runs)
                     # closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(q1,q2,q3,q4,q5,q6, num_simplex_runs, target_idx_x6, target_idx_x11,target_idx_x12, target_idx_x14, target_idx_x15, target_idx_x16)
                     
                     # TODO: to calculate the solution for the entire equation system (Xcomplete), define the matrices Xparticular and Xnull

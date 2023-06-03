@@ -30,15 +30,15 @@ def get_sensors_coverage(coverage_file):
         return sensors_coverage
 
 def get_free_variables(free_variables_file):
-    free_variables = {} # node : ([free variables], [inequality constraint matrix], [inequality constraint vector])
+    free_variables = {} # node : ([free variables], [inequality constraint matrix], [inequality constraint vector], [Xparticular], [Xnull])
     with open(free_variables_file, 'r') as f:
         content = f.read()
 
-        pattern = r"### Free variables of (.+?): (\[.+?\])\nInequality constraint matrix of (.+?): (\[\[.*?\]\])\nInequality constraint vector of (.+?): (\[.+?\])"
+        pattern = r"### Free variables of (.+?): (\[.+?\])\nInequality constraint matrix of [^:]+: (\[\[.*?\]\])\nInequality constraint vector of [^:]+: (\[.+?\])\nXparticular vector of [^:]+: (\[\[.*?\]\])\nXnull matrix of [^:]+: (\[\[.*?\]\])"
         matches = re.findall(pattern, content, re.DOTALL)
-        results = [(node1, eval(free_vars), node2, eval(ic_matrix), node3, eval(ic_vector)) for node1, free_vars, node2, ic_matrix, node3, ic_vector in matches]
+        results = [(node, eval(free_vars), eval(ic_matrix), eval(ic_vector), eval(x_particular), eval(x_null)) for node, free_vars, ic_matrix, ic_vector, x_particular, x_null in matches]
 
         for match in results:
-            free_variables[match[0]] = (match[1], match[3], match[5])
+            free_variables[match[0]] = (match[1], match[2], match[3], match[4], match[5])
 
     return free_variables
