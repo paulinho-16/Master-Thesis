@@ -267,14 +267,21 @@ if __name__ == '__main__':
                 # TODO: apply the Simplex algorithm
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables -> done
-                    closest_feasible_X_free_relative_error, targets = fn.restrictedFreeVarRange(variables_values, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], free_variables[node_name][4], num_simplex_runs)
+                    Xnull = free_variables[node_name][4]
+                    closest_feasible_X_free_relative_error, targets, Xparticular = fn.restrictedFreeVarRange(variables_values, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], Xnull, num_simplex_runs)
 
-                    # TODO: to calculate the solution for the entire equation system (Xcomplete), define the matrices Xparticular and Xnull
+                    # TODO: calculate the solution for the entire equation system (Xcomplete), by defining the matrices Xparticular and Xnull -> done
+                    Xnull_cols = []
+                    for i in range(len(free_variables_target)):
+                        Xnull_cols.append(np.array([[row[i]] for row in Xnull]))
 
-                    # TODO: if all variables are positive, break the loop (solution found?)
-                    # if np.all(Xcomplete >= 0):
-                    #     break
-                    break
+                    Xcomplete = Xparticular.astype(np.float64)
+                    for i in range(len(free_variables_target)):
+                        Xcomplete += closest_feasible_X_free_relative_error[i] * Xnull_cols[i]
+
+                    # TODO: if all variables are positive, break the loop (solution found?) -> done
+                    if np.all(Xcomplete >= 0):
+                        break
                 
                 # TODO: update TTS
                 # TODO: generate (calibrate) traffic flows - set flows of the calibrators (for cars and trucks)

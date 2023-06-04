@@ -49,7 +49,6 @@ def calc_x_particular(Xparticular_expr, variables_values):
 
 def calc_x_complete(free_variables_target, Xparticular, Xnull, new_x):
     Xnull_cols = []
-
     for i in range(len(free_variables_target)):
         Xnull_cols.append(np.array([[row[i]] for row in Xnull]))
 
@@ -150,4 +149,4 @@ def restrictedFreeVarRange(variables_values, free_variables_target, A_con, b_con
     relative_error_index = relative_error.argmin()
     closest_feasible_X_free_relative_error = X_free_bound_feasible[:, relative_error_index]
 
-    return closest_feasible_X_free_relative_error, targets
+    return closest_feasible_X_free_relative_error, targets, Xparticular
