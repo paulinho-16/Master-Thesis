@@ -266,10 +266,9 @@ if __name__ == '__main__':
 
                 # TODO: apply the Simplex algorithm
                 while True:
-                    # TODO: calculate the closest feasible error, that gives the values for the free variables
-                    closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(variables_values, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], free_variables[node_name][4], num_simplex_runs)
-                    # closest_feasible_X_free_relative_error = fn.restrictedFreeVarRange(q1,q2,q3,q4,q5,q6, num_simplex_runs, target_idx_x6, target_idx_x11,target_idx_x12, target_idx_x14, target_idx_x15, target_idx_x16)
-                    
+                    # TODO: calculate the closest feasible error, that gives the values for the free variables -> done
+                    closest_feasible_X_free_relative_error, targets = fn.restrictedFreeVarRange(variables_values, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], free_variables[node_name][4], num_simplex_runs)
+
                     # TODO: to calculate the solution for the entire equation system (Xcomplete), define the matrices Xparticular and Xnull
 
                     # TODO: if all variables are positive, break the loop (solution found?)
