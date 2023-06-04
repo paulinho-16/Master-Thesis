@@ -15,40 +15,12 @@ import collections
 import xml.etree.cElementTree as ET
 from shapely.geometry import LineString
 
-from .utils import load_config, remove_chars, write_xml, get_sensors_coverage
-
-def get_entry_exit_nodes(nodes):
-    entry_nodes = []
-    exit_nodes = []
-
-    for node in nodes:
-        incoming_edges = node.getIncoming()
-        outgoing_edges = node.getOutgoing()
-
-        if len(incoming_edges) == 0: # if it has no incoming edges, it is an entry node
-            entry_nodes.append(node)
-        elif len(outgoing_edges) == 0: # if it has no outgoing edges, it is an exit node
-            exit_nodes.append(node)
-        elif len(incoming_edges) == 1 and len(outgoing_edges) == 1 and not node.getConnections(): # case where it is simultaneously an entry and exit node (dead end, but with an entry and an exit of the network)
-            entry_nodes.append(node)
-            exit_nodes.append(node)
-        elif len(incoming_edges) == 1 and len(outgoing_edges) == 2: # case of an entry of the network through a roundabout
-            if 'rotunda' in incoming_edges[0].getName().lower() or 'roundabout' in incoming_edges[0].getName().lower():
-                for edge in outgoing_edges:
-                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
-                        entry_nodes.append(node)
-        elif len(incoming_edges) == 2 and len(outgoing_edges) == 1: # case of an exit of the network through a roundabout
-            if 'rotunda' in outgoing_edges[0].getName().lower() or 'roundabout' in outgoing_edges[0].getName().lower():
-                for edge in incoming_edges:
-                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
-                        exit_nodes.append(node)
-    
-    return entry_nodes, exit_nodes
+from .utils import load_config, remove_chars, write_xml, get_sensors_coverage, get_entry_exit_nodes
 
 def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count):
     variable = f'x{variable_count}'
-    for sensor, edges in sensors_coverage.items():
-        if edge_id in edges:
+    for sensor, values in sensors_coverage.items():
+        if edge_id in values[1]:
             variable = f'q{variable_count}'
             node_sensors[node_name].append(sensor)
 
@@ -406,18 +378,10 @@ def reduce_equations(equations):
 
     return new_equations
 
-def process_node(node_name, network_file, nodes_dir, nsf, eef, ef, sensors_coverage, node_sensors):
+def process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, node_sensors):
     network = sumolib.net.readNet(network_file)
-
-    entry_nodes, exit_nodes = get_entry_exit_nodes(network.getNodes())
-    print(f"Found {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes.")
-    print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
-    print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
-
-    # register the entry and exit nodes in the `entries_exits.md` file
-    eef.write(f'### Entry and exit nodes of {node_name}:\n')
-    eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
-    eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
+    entry_nodes_ids, exit_nodes_ids = get_entry_exit_nodes(entries_exits_file, node_name)
+    entry_nodes, exit_nodes = [network.getNode(node_id) for node_id in entry_nodes_ids], [network.getNode(node_id) for node_id in exit_nodes_ids]
 
     variable_count, equations = gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
 
@@ -453,10 +417,10 @@ if __name__ == '__main__':
     node_sensors = {}
     sensors_coverage = get_sensors_coverage(coverage_file)
 
-    with open(node_sensors_file, 'w') as nsf, open(entries_exits_file, 'w') as eef, open(equations_file, 'w') as ef:
+    with open(node_sensors_file, 'w') as nsf, open(equations_file, 'w') as ef:
         for var, value in list(config.items('nodes')):
             if var.startswith('node_'):
                 node_name, network_file = value.split(',')
                 node_sensors[node_name] = []
                 print(f"::: Processing node {node_name} :::\n")
-                process_node(node_name, network_file, nodes_dir, nsf, eef, ef, sensors_coverage, node_sensors)
+                process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, node_sensors)

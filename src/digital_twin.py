@@ -4,7 +4,7 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 
 """
 
-import os, re, sys, time
+import os, sys, time
 import numpy as np
 import pandas as pd
 import traci
@@ -14,14 +14,14 @@ import sumolib
 import requests
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_sensors_coverage, get_free_variables
+from .utils import load_config, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
 # - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
 # - for each entry and exit, set an empty array -> done
-def initialize_variables(node_name, network_file, additionals_file, entries_exits_file):
+def initialize_variables(node_name, network_file, node_sensors, entries_exits_file):
     # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))
     root = tree.getroot()
@@ -33,30 +33,17 @@ def initialize_variables(node_name, network_file, additionals_file, entries_exit
         perm_dists[poi.get('id')] = [[[],[],[0]]]
 
     # initialize the variables for each sensor
-    add_tree = ET.parse(additionals_file)
-    add_root = add_tree.getroot()
-
-    calibrators = {} # id : [old_values, new_values, lane]
-    calibrators_elems = [calibrator for calibrator in add_root.findall('calibrator')]
-    for calibrator in calibrators_elems:
-        calibrators[calibrator.get('id')] = [[0,0,0,0], [0,0,0,0], calibrator.get('lane')]
+    sensors = {} # id : [old_values, new_values, lane]
+    for sensor in node_sensors.keys():
+        sensors[sensor] = [[0,0,0,0], [0,0,0,0], node_sensors[sensor]]
 
     # store the IDs of the vehicles that entered and exited the network
     oldVehIDs = {} # node_id : [vehIDs]
-    with open(entries_exits_file, 'r') as eef:
-        pattern = fr'### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]'
-        match = re.search(pattern, eef.read(), re.DOTALL)
+    entry_nodes, exit_nodes = get_entry_exit_nodes(entries_exits_file, node_name)
+    for node in entry_nodes + exit_nodes:
+        oldVehIDs[node] = []
 
-        if match:
-            entry_nodes = [node.strip("'") for node in match.group(1).split(', ')]
-            exit_nodes = [node.strip("'") for node in match.group(2).split(', ')]
-
-            for node in entry_nodes + exit_nodes:
-                oldVehIDs[node] = []
-        else:
-            raise Exception(f'Node {node_name} not found in the `entries_exits.md` file')
-
-    return entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs
+    return entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs
 
 def get_entry_exit_variables(entry_nodes, exit_nodes, variables):
     entry_exit_variables = {} # edge_id : (variable, flow)
@@ -69,22 +56,23 @@ def get_entry_exit_variables(entry_nodes, exit_nodes, variables):
 
     return entry_exit_variables
 
-def get_calibrators_edges(network, calibrators):
-    calibrators_edges = {} # edge_id : [calibrator_id]
-    for calibrator_id, values in calibrators.items():
-        calibrators_edges.setdefault(network.getLane(values[2]).getEdge().getID(), []).append(calibrator_id)
+def get_sensors_edges(network, sensors):
+    sensors_edges = {} # edge_id : [sensor_id]
+    for sensor, values in sensors.items():
+        sensors_edges.setdefault(network.getLane(values[2]).getEdge().getID(), []).append(sensor)
     
-    return calibrators_edges
+    return sensors_edges
 
-def get_calibrators_data(calibrators, data_file):
-    calibrators_dfs = {} # id : dataframe
+def get_sensors_data(node_name, sensors, data_file):
+    sensors_dfs = {} # id : dataframe
     df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
     
-    for calibrator_id in calibrators.keys():
-        dataframe = pd.read_excel(data_file, sheet_name=calibrator_id).values.tolist()
-        calibrators_dfs[calibrator_id] = dataframe
+    for sensor_id in sensors.keys():
+        sheet_name = sensor_id.replace('CH', 'X').replace(':', '_').replace('.', '_') if node_name == 'Article' else sensor_id
+        dataframe = pd.read_excel(data_file, sheet_name=sheet_name).values.tolist()
+        sensors_dfs[sensor_id] = dataframe
 
-    return df_timestamp, calibrators_dfs
+    return df_timestamp, sensors_dfs
 
 def prepare_sumo(config, node_name):
     if 'SUMO_HOME' in os.environ:
@@ -166,21 +154,26 @@ if __name__ == '__main__':
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     network = sumolib.net.readNet(network_file)
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
-    additionals_file = config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml') # TODO: definir qual o ficheiro de additionals com base na rede utilizada
+    calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
+    additionals_file = f"{calibrators_dir}/calib_{network_file.split('.')[-3].split('/')[-1]}.add.xml"
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
     free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
+    node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
     sensors_coverage = get_sensors_coverage(coverage_file)
+    node_sensors = {}
+    for sensor_id in get_node_sensors(node_sensors_file)[node_name]:
+        node_sensors[sensor_id] = sensors_coverage[sensor_id][0]
     free_variables = get_free_variables(free_variables_file)
     free_variables_target = {var: 5 for var in free_variables[node_name][0]} # TODO: read the target values of the free variables from the Here API
-    entry_nodes, exit_nodes, routers, perm_dists, calibrators, oldVehIDs = initialize_variables(node_name, network_file, additionals_file, entries_exits_file)
-    calibrators_edges = get_calibrators_edges(network, calibrators)
+    entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs = initialize_variables(node_name, network_file, node_sensors, entries_exits_file)
+    sensors_edges = get_sensors_edges(network, sensors)
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
     with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'rb') as f:
         variables = pickle.load(f)
     variables_values = {} # variable : [flow, speed]
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
-    timestamp_hours, calibrators_data = get_calibrators_data(calibrators, data_file)
+    timestamp_hours, sensors_data = get_sensors_data(node_name, sensors, data_file)
     sumo_cmd = prepare_sumo(config, node_name)
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
@@ -223,25 +216,25 @@ if __name__ == '__main__':
             if step % (60 * (1/step_length)) == 0: # a minute has passed
                 # TODO: # store locally (in pandas dataframe) simulation data recorded during the last minute
                 if step > 0:
-                    # TODO: for each of the entries/exits with calibrators (qX - constants), get the total flow (cars + trucks) -> done
-                    # TODO: for each of the entries/exits with calibrators (qX - constants), get the speed (cars + trucks) -> done
-                    for edge_id in calibrators_edges.keys():
+                    # TODO: for each of the entries/exits with sensors (qX - constants), get the total flow (cars + trucks) -> done
+                    # TODO: for each of the entries/exits with sensors (qX - constants), get the speed (cars + trucks) -> done
+                    for edge_id in sensors_edges.keys():
                         variables_values[variables[edge_id]['root_var']] = [0, 0]
                         speed_list = []
-                        for calibrator_id in calibrators_edges[edge_id]:
-                            variables_values[variables[edge_id]['root_var']][0] += calibrators[calibrator_id][1][0] + calibrators[calibrator_id][1][2] # update the flow of the variable
-                            speed_list.extend([calibrators[calibrator_id][1][1], calibrators[calibrator_id][1][3]])
+                        for sensor_id in sensors_edges[edge_id]:
+                            variables_values[variables[edge_id]['root_var']][0] += sensors[sensor_id][1][0] + sensors[sensor_id][1][2] # update the flow of the variable
+                            speed_list.extend([sensors[sensor_id][1][1], sensors[sensor_id][1][3]])
 
                         x = 0.001 + sum(s > 0 for s in speed_list)
                         variables_values[variables[edge_id]['root_var']][1] = sum(speed_list) / x # update the speed of the variable
 
                     # TODO: np.vstack of "controlFile" variable (25 values), first the main entries/exits (real/simulated values), then rounded TTS, then the remaining entries/exits -> done
                     controlFile_list = []
-                    for edge_id in calibrators_edges.keys(): # save the flow values of the calibrators edges
+                    for edge_id in sensors_edges.keys(): # save the flow values of the sensor edges
                         controlFile_list.extend([variables_values[variables[edge_id]['root_var']][0], flow_speed_min[node][1] * 60])
                     controlFile_list.append(round(TTS)) # TODO: understand what TTS means and how it is updated
                     for edge_id in entry_exit_variables.keys(): # save the flow values of the remaining entry and exit edges
-                        if not any(edge_id in lst for lst in sensors_coverage.values()):
+                        if not any(edge_id in lst[1] for lst in sensors_coverage.values()):
                             controlFile_list.extend([entry_exit_variables[edge_id][1], flow_speed_min[node][1] * 60]) # TODO: no código do artigo usa Xcomplete nalgumas vars, adaptar isso
                     
                     controlFile = np.vstack([controlFile, controlFile_list])
@@ -250,15 +243,15 @@ if __name__ == '__main__':
                     flow_speed_min = reset_flow_speed_min(entry_nodes, exit_nodes)
 
                 # TODO: fill the vectors of each detector (array of size 4) with the values read from the real data -> done
-                for calibrator_id in calibrators.keys():
+                for sensor_id in sensors.keys():
                     for i in range(4):
-                        calibrators[calibrator_id][1][i] = calibrators_data[calibrator_id][current_min][i]
+                        sensors[sensor_id][1][i] = sensors_data[sensor_id][current_min][i]
 
                 # TODO: for each of the main entries/exits (qX - constants I guess), get the total flow (cars + trucks) -> repeated with the first line after the step>0 condition - maybe move up -> done
-                for edge_id in calibrators_edges.keys():
+                for edge_id in sensors_edges.keys():
                     variables_values[variables[edge_id]['root_var']] = [0, 0]
-                    for calibrator_id in calibrators_edges[edge_id]:
-                        variables_values[variables[edge_id]['root_var']][0] += calibrators[calibrator_id][1][0] + calibrators[calibrator_id][1][2] # update the flow of the variable
+                    for sensor_id in sensors_edges[edge_id]:
+                        variables_values[variables[edge_id]['root_var']][0] += sensors[sensor_id][1][0] + sensors[sensor_id][1][2] # update the flow of the variable
 
                 # TODO: define the intensity levels of the free variables based on the current hour of the day
                 for var in free_variables[node_name][0]:
@@ -283,8 +276,12 @@ if __name__ == '__main__':
                     if np.all(Xcomplete >= 0):
                         break
                 
-                # TODO: update TTS
-                # TODO: generate (calibrate) traffic flows - set flows of the calibrators (for cars and trucks)
+                # TODO: update TTS -> done
+                TTS += (traci.vehicle.getIDCount()) * (60 / 3600)
+
+                # TODO: generate (calibrate) traffic flows - set flows of the calibrators in the entries of the network (for cars and trucks)
+
+
                 current_min += 1
 
                 # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations (but how many routers, and where?)

@@ -12,9 +12,9 @@ define get_filename
 $(shell powershell.exe -NoProfile -Command "Split-Path '$1' -Leaf")
 endef
 
-SUMO_PATH := $(call get_variable,dir,SUMO)
-CALIBRATORS_FILENAME := $(call get_filename, $(call get_variable,sumo,CALIBRATORS))
-CALIBRATORS_FILE = $(SUMO_PATH)\$(CALIBRATORS_FILENAME)
+# SUMO_PATH := $(call get_variable,dir,SUMO)
+# CALIBRATORS_FILENAME := $(call get_filename, $(call get_variable,sumo,CALIBRATORS))
+# CALIBRATORS_FILE = $(SUMO_PATH)\$(CALIBRATORS_FILENAME)
 
 NODES_PATH := $(call get_variable,dir,NODES)
 NODE_ARTICLE_FILENAME := $(call get_filename, $(call get_variable,nodes,NODE_ARTICLE))
@@ -40,4 +40,4 @@ run:
 
 clean:
 	@PowerShell -Command "Write-Output 'Removing files...'"
-	del $(CALIBRATORS_FILE)
+	# del $(CALIBRATORS_FILE)

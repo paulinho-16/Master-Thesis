@@ -1,6 +1,7 @@
 """Simulation Preparation
 
-This script reads the location of the detectors from a spreadsheet and creates the calibrator objects in those positions, generating the file `detectors.add.xml` in the `sumo` folder.
+This script reads the location of the detectors from a spreadsheet and derives the corresponding network coverage of the sensors.
+It also creates the calibrator objects in the network entries, generating the corresponding files in the `sumo/calibrators` folder.
 It prepares the simulation view, editing the file `vci.view.xml` in the `sumo` folder according to the parameters in the `config.ini` file.
 It also prepares sensor data, grouping counts into 1-minute blocks.
 
@@ -45,20 +46,50 @@ def get_closest_lane(network, x, y, radius):
         return closestLane.getID()
     else:
         raise Exception()
+    
+def gen_entry_exit_nodes(node_name, nodes, eef):
+    entry_nodes = []
+    exit_nodes = []
 
-def gen_calibrators(df, network, network_article):
+    for node in nodes:
+        incoming_edges = node.getIncoming()
+        outgoing_edges = node.getOutgoing()
+
+        if len(incoming_edges) == 0: # if it has no incoming edges, it is an entry node
+            entry_nodes.append(node)
+        elif len(outgoing_edges) == 0: # if it has no outgoing edges, it is an exit node
+            exit_nodes.append(node)
+        elif len(incoming_edges) == 1 and len(outgoing_edges) == 1 and not node.getConnections(): # case where it is simultaneously an entry and exit node (dead end, but with an entry and an exit of the network)
+            entry_nodes.append(node)
+            exit_nodes.append(node)
+        elif len(incoming_edges) == 1 and len(outgoing_edges) == 2: # case of an entry of the network through a roundabout
+            if 'rotunda' in incoming_edges[0].getName().lower() or 'roundabout' in incoming_edges[0].getName().lower():
+                for edge in outgoing_edges:
+                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
+                        entry_nodes.append(node)
+        elif len(incoming_edges) == 2 and len(outgoing_edges) == 1: # case of an exit of the network through a roundabout
+            if 'rotunda' in outgoing_edges[0].getName().lower() or 'roundabout' in outgoing_edges[0].getName().lower():
+                for edge in incoming_edges:
+                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
+                        exit_nodes.append(node)
+    
+    print(f"\nFound {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes for the network node {node_name}.")
+    print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
+    print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
+
+    # register the entry and exit nodes in the `entries_exits.md` file
+    eef.write(f'### Entry and exit nodes of {node_name}:\n')
+    eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
+    eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
+
+    return entry_nodes
+
+def gen_coverage(df, network, network_article):
     radius = 50
-    additional_tag = ET.Element('additional')
-    additional_tag_article = ET.Element('additional')
-
-    output_dir = config.get('dir', 'OUTPUT', fallback='./output')
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
+
     with open(coverage_file, 'w') as f:
         coverage = ''
-        calib_id = 1
-
         for _, row in df.iterrows():
             network_name = row['Network']
             sensor = row['Equipamento']
@@ -70,19 +101,10 @@ def gen_calibrators(df, network, network_article):
             except Exception:
                 print(f"No edges found within radius for the coordinates {coords}!")
                 continue
-            
-            # TODO: Instead of a fixed pos, look for the closest pos to the sensor coords
-            output_file = f'{output_dir}/calibrator_{calib_id}.xml' if network_name == 'VCI' else f'{output_dir}/calibrator_{sensor.replace("CH", "X").replace(":", "_").replace(".", "_")}.xml'
-            if network_name == 'VCI':
-                ET.SubElement(additional_tag, 'calibrator', id=f'calib_{calib_id}', edge=edge_id, pos='20', output=output_file)
-                calib_id += 1
-            else:
-                closest_position = str(network_article.getLane(edge_id).getLength() / 2) # TODO: para já coloco no meio da edge, futuramente colocar nas coords exatas - como o fazer?
-                ET.SubElement(additional_tag_article, 'calibrator', id=sensor.replace('CH', 'X').replace(':', '_').replace('.', '_'), lane=edge_id, pos=closest_position, output=output_file)
 
             # define the edges whose flow is determined by the detector
             edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
-            coverage += f'\n### Edges covered by sensor {sensor}:\n'
+            coverage += f'\n### Edges covered by sensor {sensor} ({edge_id}):\n'
             coverage += f'{edge.getID()}\n'
 
             previous_edges = list(edge.getIncoming().keys())
@@ -104,8 +126,20 @@ def gen_calibrators(df, network, network_article):
 
         f.write(coverage.strip())
 
-    write_xml(additional_tag, config.get('sumo', 'CALIBRATORS', fallback='./sumo/calibrators.add.xml'))
-    write_xml(additional_tag_article, config.get('sumo', 'CALIBRATORS_ARTICLE', fallback='./sumo/calibrators_article.add.xml'))
+def gen_calibrators(node_name, entry_nodes):
+    additional_tag = ET.Element('additional')
+
+    output_dir = config.get('dir', 'OUTPUT', fallback='./output')
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    for entry in entry_nodes:
+        output_file = f'{output_dir}/calibrator_{entry.getID()}.xml'
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_{entry.getID()}', edge=entry.getOutgoing()[0].getID(), pos='0', output=output_file)
+
+    calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
+    Path(calibrators_dir).mkdir(parents=True, exist_ok=True)
+
+    write_xml(additional_tag, f'{calibrators_dir}/calib_{node_name}.add.xml')
 
 def prepare_view():
     view_file = config.get('sumo', 'VIEW', fallback='./sumo/vci.view.xml')
@@ -186,7 +220,17 @@ if __name__ == '__main__':
     df = pd.read_excel(config.get('sensors', 'LOCATIONS', fallback='./data/sensor_locations.xlsx'))
     network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
     network_article = sumolib.net.readNet(config.get('nodes', 'NODE_ARTICLE', fallback='Article,./nodes/no_artigo.net.xml').split(',')[1])
+    entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
 
-    gen_calibrators(df, network, network_article)
+    gen_coverage(df, network, network_article)
+
+    with open(entries_exits_file, 'w') as eef:
+        for var, value in list(config.items('nodes')):
+            if var.startswith('node_'):
+                node_name, network_file = value.split(',')
+                node_network = sumolib.net.readNet(network_file)
+                entry_nodes = gen_entry_exit_nodes(node_name, node_network.getNodes(), eef)
+                gen_calibrators(network_file.split('.')[-3].split('/')[-1], entry_nodes)
+    
     prepare_view()
     prepare_data()

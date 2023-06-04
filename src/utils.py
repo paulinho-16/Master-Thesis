@@ -15,19 +15,35 @@ def write_xml(body, file):
     tree = ET.ElementTree(body)
     tree.write(file, encoding='UTF-8', xml_declaration=True)
 
+def get_node_sensors(node_sensors_file):
+    node_sensors = {} # node : [sensors]
+    with open(node_sensors_file, 'r') as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith('###'):
+                node = line.split('Sensors of')[-1].strip()[:-1]
+                node_sensors[node] = []
+            elif line != '\n':
+                node_sensors[node].append(line.strip())
+
+    return node_sensors
+
 def get_sensors_coverage(coverage_file):
-        sensors_coverage = {} # sensor : [edges]
-        with open(coverage_file, 'r') as f:
-            lines = f.readlines()
+    sensors_coverage = {} # sensor : [lane_id, edges]
+    with open(coverage_file, 'r') as f:
+        lines = f.readlines()
 
-            for line in lines:
-                if line.startswith('###'):
-                    sensor = line.split('sensor')[-1].strip()[:-1]
-                    sensors_coverage[sensor] = []
-                elif line != '\n':
-                    sensors_coverage[sensor].append(line.strip())
+        for line in lines:
+            if line.startswith('###'):
+                sensor_lane = line.split('sensor')[-1].strip()[:-1]
+                sensor = sensor_lane[:sensor_lane.rindex('(')].strip()
+                lane_id = re.findall(r'\((.*?)\)', sensor_lane)[-1]
+                sensors_coverage[sensor] = [lane_id, []]
+            elif line != '\n':
+                sensors_coverage[sensor][1].append(line.strip())
 
-        return sensors_coverage
+    return sensors_coverage
 
 def get_free_variables(free_variables_file):
     free_variables = {} # node : ([free variables], [inequality constraint matrix], [inequality constraint vector], [Xparticular], [Xnull])
@@ -42,3 +58,17 @@ def get_free_variables(free_variables_file):
             free_variables[match[0]] = (match[1], match[2], match[3], match[4], match[5])
 
     return free_variables
+
+def get_entry_exit_nodes(entries_exits_file, node_name):
+    with open(entries_exits_file, 'r') as eef:
+        pattern = fr'### Entry and exit nodes of {re.escape(node_name)}:\nEntry nodes: \[(.*?)\]\nExit nodes: \[(.*?)\]'
+        match = re.search(pattern, eef.read(), re.DOTALL)
+
+        if match:
+            entry_nodes = [node.strip("'") for node in match.group(1).split(', ')]
+            exit_nodes = [node.strip("'") for node in match.group(2).split(', ')]
+
+        else:
+            raise Exception(f'Node {node_name} not found in the `entries_exits.md` file')
+    
+    return entry_nodes, exit_nodes

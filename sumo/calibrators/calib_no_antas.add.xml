@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<additional>
+	<calibrator id="calib_130075494" edge="478886770" pos="0" output="./output/calibrator_130075494.xml" />
+	<calibrator id="calib_4720708100" edge="478886776" pos="0" output="./output/calibrator_4720708100.xml" />
+	<calibrator id="calib_5307690020" edge="536714314#0" pos="0" output="./output/calibrator_5307690020.xml" />
+	<calibrator id="calib_1352663666" edge="549444981#0" pos="0" output="./output/calibrator_1352663666.xml" />
+</additional>

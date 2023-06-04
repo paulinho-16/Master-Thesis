@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<additional>
+	<calibrator id="calib_J39" edge="E10.25" pos="0" output="./output/calibrator_J39.xml" />
+	<calibrator id="calib_J35" edge="E11" pos="0" output="./output/calibrator_J35.xml" />
+	<calibrator id="calib_J28" edge="ES_N56_onramp1.90" pos="0" output="./output/calibrator_J28.xml" />
+	<calibrator id="calib_J40" edge="E_NS6" pos="0" output="./output/calibrator_J40.xml" />
+	<calibrator id="calib_J358" edge="N_ES149" pos="0" output="./output/calibrator_J358.xml" />
+	<calibrator id="calib_J26" edge="N_ES152_onramp1.89" pos="0" output="./output/calibrator_J26.xml" />
+	<calibrator id="calib_497734" edge="S_NE11" pos="0" output="./output/calibrator_497734.xml" />
+</additional>
