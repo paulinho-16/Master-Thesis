@@ -6,18 +6,7 @@ This script reads the equations of the VCI nodes from the file `equations.md` in
 
 import sympy
 
-from .utils import load_config, remove_chars
-
-def get_variables(equations):
-    variables = set()
-    for eq in equations:
-        vars = remove_chars(eq, '+-=').split()
-        for var in vars:
-            if var.startswith('x'):
-                variables.add(var)
-    
-    variables = sorted(list(variables), key=lambda x: int(x[1:]))
-    return variables
+from .utils import load_config, remove_chars, get_variables
 
 def get_inequality_constraint_matrix(matrix, free_variables):
     ic_matrix = []

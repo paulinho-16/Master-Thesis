@@ -14,7 +14,7 @@ import sumolib
 import requests
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators
+from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
@@ -29,7 +29,7 @@ def initialize_variables(node_name, network_file, node_sensors, entries_exits_fi
     routers, perm_dists = {}, {}
     router_pois = [poi for poi in root.findall('poi') if poi.get('type') == 'router']
     for poi in router_pois:
-        routers[poi.get('id')] = [poi.get('x'), poi.get('y'), poi.get('name')]
+        routers[poi.get('id')] = [poi.get('x'), poi.get('y'), poi.get('name')] # router_id : [x, y, edge]
         perm_dists[poi.get('id')] = [[[],[],[0]]]
 
     # initialize the variables for each sensor
@@ -153,6 +153,8 @@ if __name__ == '__main__':
     config = load_config()
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     network = sumolib.net.readNet(network_file)
+    equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
+    eq_variables = get_eq_variables(node_name, equations_file)
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
     additionals_file = f"{calibrators_dir}/calib_{network_file.split('.')[-3].split('/')[-1]}.add.xml"
@@ -310,7 +312,34 @@ if __name__ == '__main__':
                 
                 current_min += 1
 
-                # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations (but how many routers, and where?)
+                # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations
+                prob_dists = {} # router_id : {edge_id : prob_dist}
+                for router in routers.keys():
+                    var = variables[routers[router][2]]['root_var']
+                    if var.startswith('q'):
+                        var_value = variables_values[var][0]
+                    elif var.startswith('x'):
+                        var_value = float(Xcomplete[eq_variables.index(var)][0])
+
+                    prob_dists[router] = {}
+                    if var_value != 0:
+                        split_edges = list(network.getEdge(routers[router][2]).getOutgoing().keys())
+                        if len(split_edges) != 2: # TODO: como lidar com casos em que a edge se divide em mais do que duas?
+                            raise Exception(f"Router {router} in split with more than 2 outgoing edges. Please adapt the network so that each split has only 2 outgoing edges.")
+                        
+                        var_index_1 = eq_variables.index(variables[split_edges[0].getID()]['root_var'])
+                        prob_dists[router][split_edges[0].getID()] = int((np.round(10 * (Xcomplete[var_index_1]) / var_value)) * 10)
+                        prob_dists[router][split_edges[1].getID()] = int(100 - prob_dists[router][split_edges[0].getID()])
+                    else:
+                        prob_dists[router][split_edges[0].getID()] = 50
+                        prob_dists[router][split_edges[1].getID()] = 50
+
+                # TODO: criar ficheiros com as routes distributions
+                # TODO: averiguar se a ordem de escrita dos valores prob não varia
+                r_dists = {} # router_id : route_distribution_name
+                for router in routers.keys():
+                    first_prob, second_prob = prob_dists[router].values()
+                    r_dists[router] = f'routedist_{router}_{first_prob}_{second_prob}'
 
             if step % (1/step_length) == 0: # write results of the second?
                 if step % (60 * (1/step_length)) == 0: # is this condition really needed?

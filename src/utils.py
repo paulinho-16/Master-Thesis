@@ -15,6 +15,33 @@ def write_xml(body, file):
     tree = ET.ElementTree(body)
     tree.write(file, encoding='UTF-8', xml_declaration=True)
 
+def get_variables(equations):
+    variables = set()
+    for eq in equations:
+        vars = remove_chars(eq, '+-=').split()
+        for var in vars:
+            if var.startswith('x'):
+                variables.add(var)
+    
+    variables = sorted(list(variables), key=lambda x: int(x[1:]))
+    return variables
+
+def get_eq_variables(node_name, equations_file):
+    with open(equations_file, 'r') as f:
+        lines = f.readlines()
+
+        for i, line in enumerate(lines):
+            if line.startswith('###'):
+                current_node = remove_chars(line.strip(), '#:')
+                eq_node_name = current_node.split(' - ')[0].split(' of ')[1].strip()
+                if eq_node_name == node_name:
+                    num_equations = int(current_node.split(' - ')[1])
+                    equations = [remove_chars(eq.strip(), '$_{}\\') for eq in lines[i+1:i+num_equations+1]]
+                    variables = get_variables(equations)
+                    break
+    
+    return variables
+
 def get_node_sensors(node_sensors_file):
     node_sensors = {} # node : [sensors]
     with open(node_sensors_file, 'r') as f:
