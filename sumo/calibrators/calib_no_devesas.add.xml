@@ -1,7 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
-	<calibrator id="calib_J0" edge="173072184" pos="0" output="./output/calibrator_J0.xml" />
-	<calibrator id="calib_461172813-AddedOffRampNode" edge="461172813-AddedOffRampEdge" pos="0" output="./output/calibrator_461172813-AddedOffRampNode.xml" />
-	<calibrator id="calib_461173094-AddedOffRampNode" edge="461173094-AddedOffRampEdge" pos="0" output="./output/calibrator_461173094-AddedOffRampNode.xml" />
-	<calibrator id="calib_1838975441" edge="54375654" pos="0" output="./output/calibrator_1838975441.xml" />
+	<calibrator id="calib_car_J0" vTypes="vtype_car" edge="173072184" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J0.xml" />
+	<calibrator id="calib_truck_J0" vTypes="vtype_truck" edge="173072184" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J0.xml" />
+	<calibrator id="calib_car_461172813-AddedOffRampNode" vTypes="vtype_car" edge="461172813-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_car_461172813-AddedOffRampNode.xml" />
+	<calibrator id="calib_truck_461172813-AddedOffRampNode" vTypes="vtype_truck" edge="461172813-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_461172813-AddedOffRampNode.xml" />
+	<calibrator id="calib_car_461173094-AddedOffRampNode" vTypes="vtype_car" edge="461173094-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_car_461173094-AddedOffRampNode.xml" />
+	<calibrator id="calib_truck_461173094-AddedOffRampNode" vTypes="vtype_truck" edge="461173094-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_461173094-AddedOffRampNode.xml" />
+	<calibrator id="calib_car_1838975441" vTypes="vtype_car" edge="54375654" pos="0" jamThreshold="0.5" output="./output/calibrator_car_1838975441.xml" />
+	<calibrator id="calib_truck_1838975441" vTypes="vtype_truck" edge="54375654" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_1838975441.xml" />
 </additional>

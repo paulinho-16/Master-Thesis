@@ -72,3 +72,14 @@ def get_entry_exit_nodes(entries_exits_file, node_name):
             raise Exception(f'Node {node_name} not found in the `entries_exits.md` file')
     
     return entry_nodes, exit_nodes
+
+def get_calibrators(additionals_file):
+    add_tree = ET.parse(additionals_file)
+    add_root = add_tree.getroot()
+
+    calibrators = {} # id : edge
+    calibrators_elems = [calibrator for calibrator in add_root.findall('calibrator')]
+    for calibrator in calibrators_elems:
+        calibrators[calibrator.get('id')] = calibrator.get('edge')
+
+    return calibrators

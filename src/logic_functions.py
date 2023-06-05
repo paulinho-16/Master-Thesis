@@ -84,8 +84,7 @@ def freeVarRange(free_variables_target, A_con, b_con, Xparticular, Xnull, num_si
 
     return X_free_range
 
-def restrictedFreeVarRange(variables_values, free_variables_target, A_con, b_con_expr, Xparticular_expr, Xnull, num_simplex_runs):
-    free_variables_order = sorted(list(free_variables_target.keys()), key=lambda x: int(x[1:]))
+def restrictedFreeVarRange(variables_values, free_variables_order, free_variables_target, A_con, b_con_expr, Xparticular_expr, Xnull, num_simplex_runs):
     A_con = np.array(A_con)
     b_con = np.array(calc_list_expr(b_con_expr, variables_values))
     Xparticular = np.array(calc_x_particular(Xparticular_expr, variables_values))

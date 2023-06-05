@@ -14,7 +14,7 @@ import sumolib
 import requests
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes
+from .utils import load_config, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
@@ -156,6 +156,7 @@ if __name__ == '__main__':
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
     additionals_file = f"{calibrators_dir}/calib_{network_file.split('.')[-3].split('/')[-1]}.add.xml"
+    calibrators = get_calibrators(additionals_file)
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
     free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
@@ -168,6 +169,10 @@ if __name__ == '__main__':
     free_variables_target = {var: 5 for var in free_variables[node_name][0]} # TODO: read the target values of the free variables from the Here API
     entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs = initialize_variables(node_name, network_file, node_sensors, entries_exits_file)
     sensors_edges = get_sensors_edges(network, sensors)
+    covered_calibrators = {}
+    for calib in calibrators.keys():
+        if calibrators[calib] in sensors_edges.keys():
+            covered_calibrators[calib] = sensors_edges[calibrators[calib]]
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
     with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'rb') as f:
         variables = pickle.load(f)
@@ -261,7 +266,8 @@ if __name__ == '__main__':
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables -> done
                     Xnull = free_variables[node_name][4]
-                    closest_feasible_X_free_relative_error, targets, Xparticular = fn.restrictedFreeVarRange(variables_values, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], Xnull, num_simplex_runs)
+                    free_variables_order = sorted(list(free_variables_target.keys()), key=lambda x: int(x[1:]))
+                    closest_feasible_X_free_relative_error, targets, Xparticular = fn.restrictedFreeVarRange(variables_values, free_variables_order, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], Xnull, num_simplex_runs)
 
                     # TODO: calculate the solution for the entire equation system (Xcomplete), by defining the matrices Xparticular and Xnull -> done
                     Xnull_cols = []
@@ -280,8 +286,28 @@ if __name__ == '__main__':
                 TTS += (traci.vehicle.getIDCount()) * (60 / 3600)
 
                 # TODO: generate (calibrate) traffic flows - set flows of the calibrators in the entries of the network (for cars and trucks)
-
-
+                for calib_id in calibrators.keys():
+                    if calib_id in covered_calibrators.keys():
+                        if '_car_' in calib_id:
+                            flow_idx, speed_idx, veh_type = 0, 1, 'vtype_car'
+                        elif '_truck_' in calib_id:
+                            flow_idx, speed_idx, veh_type = 2, 3, 'vtype_truck'
+                        
+                        v_calib = [sensors[sensor_id][1][speed_idx] / 3.6 for sensor_id in covered_calibrators[calib_id]]
+                        x = 0.001 + sum(x > 0 for x in v_calib)
+                        vehsPerHour = 0
+                        for sensor_id in covered_calibrators[calib_id]:
+                            vehsPerHour += sensors[sensor_id][1][flow_idx]
+                        speed = sum(v_calib) / x
+                        # TODO: definir rotas como route_cali_E_NS5...
+                        traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, vehsPerHour, speed, veh_type, 'route_cali_E_NS5', departLane='free', departSpeed='max')
+                    else:
+                        var_index = free_variables_order.index(variables[calibrators[calib_id]]['root_var'])
+                        if '_car_' in calib_id:
+                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, closest_feasible_X_free_relative_error[var_index], 22.22, 'vtype_car', 'route_cali_N_ES152_onRamp1', departLane='free', departSpeed='max')
+                        elif '_truck_' in calib_id: # TODO: porquê que mete o fluxo a zero para trucks?
+                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', 'route_cali_N_ES152_onRamp1', departLane='free', departSpeed='max')
+                
                 current_min += 1
 
                 # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations (but how many routers, and where?)

@@ -1,7 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
-	<calibrator id="calib_cluster_128597080_4087312908" edge="979428550" pos="0" output="./output/calibrator_cluster_128597080_4087312908.xml" />
-	<calibrator id="calib_212710703-AddedOffRampNode" edge="212710703-AddedOffRampEdge" pos="0" output="./output/calibrator_212710703-AddedOffRampNode.xml" />
-	<calibrator id="calib_26015895" edge="478882414" pos="0" output="./output/calibrator_26015895.xml" />
-	<calibrator id="calib_479365561-AddedOnRampNode" edge="479365561" pos="0" output="./output/calibrator_479365561-AddedOnRampNode.xml" />
+	<calibrator id="calib_car_cluster_128597080_4087312908" vTypes="vtype_car" edge="979428550" pos="0" jamThreshold="0.5" output="./output/calibrator_car_cluster_128597080_4087312908.xml" />
+	<calibrator id="calib_truck_cluster_128597080_4087312908" vTypes="vtype_truck" edge="979428550" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_cluster_128597080_4087312908.xml" />
+	<calibrator id="calib_car_212710703-AddedOffRampNode" vTypes="vtype_car" edge="212710703-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_car_212710703-AddedOffRampNode.xml" />
+	<calibrator id="calib_truck_212710703-AddedOffRampNode" vTypes="vtype_truck" edge="212710703-AddedOffRampEdge" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_212710703-AddedOffRampNode.xml" />
+	<calibrator id="calib_car_26015895" vTypes="vtype_car" edge="478882414" pos="0" jamThreshold="0.5" output="./output/calibrator_car_26015895.xml" />
+	<calibrator id="calib_truck_26015895" vTypes="vtype_truck" edge="478882414" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_26015895.xml" />
+	<calibrator id="calib_car_479365561-AddedOnRampNode" vTypes="vtype_car" edge="479365561" pos="0" jamThreshold="0.5" output="./output/calibrator_car_479365561-AddedOnRampNode.xml" />
+	<calibrator id="calib_truck_479365561-AddedOnRampNode" vTypes="vtype_truck" edge="479365561" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_479365561-AddedOnRampNode.xml" />
 </additional>
