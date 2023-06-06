@@ -182,6 +182,7 @@ if __name__ == '__main__':
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
     timestamp_hours, sensors_data = get_sensors_data(node_name, sensors, data_file)
     sumo_cmd = prepare_sumo(config, node_name)
+    vehIDs_all = []
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
 
@@ -377,12 +378,22 @@ if __name__ == '__main__':
                 # TODO: DFC mechanism
                 if step > 0:
                     if sim_time % time_clean == 0:
-                        # get the ID list of all vehicles currently running within the scenario
-                        pass
+                        # TODO: get the ID list of all vehicles currently running within the scenario -> done
+                        vehIDs_all = traci.vehicle.getIDList()
 
-                    # TODO: for each distribution, dinamically assign routes to the vehicles according to the probability distribution model
+                    # TODO: for each distribution, dinamically assign routes to the vehicles according to the probability distribution model -> done
+                    for router in routers.keys():
+                        edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Pode ser a do router? Ou a anterior? Para já envio a anterior
+                        incoming_edges = network.getEdge(edgeStartPlusOne).getFromNode().getIncoming()
+                        if len(incoming_edges) != 1:
+                            raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
+                        edgeStart = incoming_edges[0].getID()
+                        edgeStart_extra = "APAGAR" # TODO: ver que edges meter aqui
+                        temp_dists[router], perm_dists[router] = fn.routingDinamically(edgeStart, temp_dists[router], perm_dists[router], edgeStart_extra, time_clean, sim_time, vehIDs_all)
 
-            # TODO: slow down or speed up the simulation based on the predefined value
+                    vehIDs_all = []
+
+            # TODO: slow down or speed up the simulation based on the predefined value -> done
             time.sleep(time_sleep)
 
             if step % (3600 * (1/step_length)) == 0 and step > 0: # an hour has passed

@@ -149,3 +149,48 @@ def restrictedFreeVarRange(variables_values, free_variables_order, free_variable
     closest_feasible_X_free_relative_error = X_free_bound_feasible[:, relative_error_index]
 
     return closest_feasible_X_free_relative_error, targets, Xparticular
+
+def routingDinamically(edgeStart, temp_obj_dist, perm_obj_dist, edgeStart_id, time_clean, sim_time, vehIDs_all):
+    currentVehIDs = traci.edge.getLastStepVehicleIDs(edgeStart)
+    for obj1 in list(temp_obj_dist):
+        if len(temp_obj_dist[0]) != 0:
+            for veh in list(obj1[0]):
+                for vehID in list(currentVehIDs):
+                    if veh == vehID:
+                        for route_dist in list(obj1[1]):
+                            try:
+                                route_dist.index(edgeStart_id)
+                            except ValueError:
+                                right_router = False
+                            else:
+                                right_router = True
+                            if right_router:
+                                traci.vehicle.setRouteID(vehID, route_dist)
+                                obj1[0].remove(veh)
+
+    for obj1 in list(perm_obj_dist):
+        if len(obj1[0]) != 0:
+            for veh in list(obj1[0]):
+                for vehID in list(currentVehIDs):
+                    if veh == vehID:
+                        for route_dist in list(obj1[1]):
+                            try:
+                                route_dist.index(edgeStart_id)
+                            except ValueError:
+                                right_router = False
+                            else:
+                                right_router = True
+                            if right_router:
+                                traci.vehicle.setRouteID(vehID, route_dist)
+                                obj1[0].remove(veh)
+
+    if sim_time % time_clean == 0:
+        for obj1 in list(perm_obj_dist):
+            if len(obj1[0]) != 0:
+                for veh in list(obj1[0]):
+                    if veh not in vehIDs_all:
+                        obj1[0].remove(veh)
+
+    perm_obj_dist = [obj_i for obj_i in perm_obj_dist if len(obj_i[0]) != 0]
+
+    return temp_obj_dist, perm_obj_dist
