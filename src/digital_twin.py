@@ -207,17 +207,20 @@ if __name__ == '__main__':
 
             if step % (1/step_length) == 0: # a second has passed
                 # TODO: update the flow in variables for each entry on the network -> done
+                new_veh_ids = {} # node : [vehIDs]
+
                 for node in entry_nodes:
                     start_edge = network.getNode(node).getOutgoing()[0]
                     next_edge = start_edge.getToNode().getOutgoing()[0]
-                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
+                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
+                    new_veh_ids[node] = newVehIDs
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
                 # TODO: update the flow out variables for each exit on the network -> done
                 for node in exit_nodes:
                     next_edge = network.getNode(node).getIncoming()[0]
                     start_edge = next_edge.getFromNode().getIncoming()[0]
-                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node]) # TODO: newVehIDs é usado para quê?
+                    flow, speed, oldVehIDs[node], _ = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
             if step % (60 * (1/step_length)) == 0: # a minute has passed
@@ -345,20 +348,35 @@ if __name__ == '__main__':
                 if step % (60 * (1/step_length)) == 0: # is this condition really needed?
                     # TODO: add flags/markers to vehicles with routes assigned
                     sim_time = round(traci.simulation.getTime())
+                    total_veh_ids = [vehID for sublist in new_veh_ids.values() for vehID in sublist]
+
                     if step == 0:
-                        # TODO: initialize temporary empty array for each route distribution
-                        # TODO: append new vehicles on the entries/calibrators, route probabilities, and simulation time to each array
-                        pass
+                        # TODO: initialize temporary empty array for each route distribution -> done
+                        temp_dists = {} # router_id : [temp_dist]
+                        for router in routers.keys():
+                            temp_dists[router] = []
+                            # temp_dists[router].append()
+
+                        # TODO: append new vehicles on the network entries, route distributions, and simulation time to each array -> done
+                        for router in routers.keys():
+                            temp_dists[router].append([total_veh_ids, [r_dists[router]], [sim_time]])
                     else:
-                        # TODO: for each distribution, check if new vehicles entered the network, and if so, append to the permanent distribution array
-                        # then empty the respective temporary array of that distribution, set current_routes_dist and reappend the new vehicles, route distributions and simulation time
-                        pass
+                        # TODO: for each router, check if new vehicles entered the network, and if so, append to the permanent distribution array -> done
+                        for router in routers.keys():
+                            if len(temp_dists[router][0][0]) != 0:
+                                perm_dists[router].append(temp_dists[router][0])
+                            temp_dists[router] = []
+                            temp_dists[router].append([total_veh_ids, [r_dists[router]], [sim_time]])
                 
-                # TODO: for each new vehicle inserted in each entry, append it to the temporary array of each distribution
+                # TODO: for each new vehicle inserted in each entry, append it to the temporary array of each distribution -> done
+                for veh_list in new_veh_ids.values():
+                    for veh_id in veh_list:
+                        for router in routers.keys():
+                            temp_dists[router][0][0].append(veh_id)
 
                 # TODO: DFC mechanism
                 if step > 0:
-                    if sim_time % time_clean == 0: 
+                    if sim_time % time_clean == 0:
                         # get the ID list of all vehicles currently running within the scenario
                         pass
 
