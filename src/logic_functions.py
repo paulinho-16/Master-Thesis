@@ -194,3 +194,9 @@ def routingDinamically(edgeStart, temp_obj_dist, perm_obj_dist, edgeStart_id, ti
     perm_obj_dist = [obj_i for obj_i in perm_obj_dist if len(obj_i[0]) != 0]
 
     return temp_obj_dist, perm_obj_dist
+
+def saveState(current_hour):
+    traci.simulation.saveState(f'state_{str(current_hour)}.xml')
+    
+def loadState(current_hour):
+    traci.load(['--start', '1', '--quit-on-end', '1', '--load-state', f'state_{str(current_hour)}.xml'])

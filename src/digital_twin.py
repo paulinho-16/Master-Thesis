@@ -12,6 +12,7 @@ import pickle
 import herepy
 import sumolib
 import requests
+from pathlib import Path
 import xml.etree.cElementTree as ET
 
 from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators
@@ -182,6 +183,8 @@ if __name__ == '__main__':
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
     timestamp_hours, sensors_data = get_sensors_data(node_name, sensors, data_file)
     sumo_cmd = prepare_sumo(config, node_name)
+    results_dir = config.get('dir', 'RESULTS', fallback='./sumo/results')
+    Path(results_dir).mkdir(parents=True, exist_ok=True)
     vehIDs_all = []
 
     # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
@@ -199,8 +202,12 @@ if __name__ == '__main__':
         print(f"Running simulation for hour {current_hour + 1} of {total_hours}")
         traci.start(sumo_cmd)
 
-        controlFile = np.zeros((1, len(oldVehIDs)*2 + 1)) # controlFile -> guarda os resultados periodicamente? -> o segundo número é o dobro de entradas e saídas, mais 1 para o TTS
+        controlFile = np.zeros((1, len(oldVehIDs) * 2 + 1)) # controlFile -> guarda os resultados periodicamente? -> o segundo número é o dobro de entradas e saídas, mais 1 para o TTS
         flow_speed_min = reset_flow_speed_min(entry_nodes, exit_nodes)
+
+        # if current_hour > 0:
+        #     fn.loadState(current_hour - 1)
+        #         time.sleep(0.05)
 
         step = 0
         while step <= total_steps:
@@ -241,10 +248,10 @@ if __name__ == '__main__':
 
                     # TODO: np.vstack of "controlFile" variable (25 values), first the main entries/exits (real/simulated values), then rounded TTS, then the remaining entries/exits -> done
                     controlFile_list = []
-                    for edge_id in sensors_edges.keys(): # save the flow values of the sensor edges
+                    for edge_id in sorted(sensors_edges.keys()): # save the flow values of the sensor edges
                         controlFile_list.extend([variables_values[variables[edge_id]['root_var']][0], flow_speed_min[node][1] * 60])
                     controlFile_list.append(round(TTS)) # TODO: understand what TTS means and how it is updated
-                    for edge_id in entry_exit_variables.keys(): # save the flow values of the remaining entry and exit edges
+                    for edge_id in sorted(entry_exit_variables.keys()): # save the flow values of the remaining entry and exit edges
                         if not any(edge_id in lst[1] for lst in sensors_coverage.values()):
                             controlFile_list.extend([entry_exit_variables[edge_id][1], flow_speed_min[node][1] * 60]) # TODO: no código do artigo usa Xcomplete nalgumas vars, adaptar isso
                     
@@ -398,7 +405,27 @@ if __name__ == '__main__':
 
             if step % (3600 * (1/step_length)) == 0 and step > 0: # an hour has passed
                 # TODO: store the "controlFile" content in an Excel file
-                # TODO: reset the "controlFile" variable
+                df_content = {}
+                index = 0
+                for edge_id in sorted(sensors_edges.keys()):
+                    df_content[f'f_{edge_id}_ref'] = controlFile[1:, index]
+                    df_content[f'f_{edge_id}'] = controlFile[1:, index + 1]
+                    index += 2
+                df_content['TTS'] = controlFile[1:, index]
+                index += 1
+                for edge_id in sorted(entry_exit_variables.keys()):
+                    if not any(edge_id in lst[1] for lst in sensors_coverage.values()):
+                        df_content[f'f_{edge_id}_ref'] = controlFile[1:, index]
+                        df_content[f'f_{edge_id}'] = controlFile[1:, index + 1]
+                        index += 2
+
+                df = pd.DataFrame(df_content)
+
+                # fn.saveState(current_hour)  # one can save simulation state e.g., each hour (simulation can be thus reloaded and simulated from this point in time)
+                TTS = 0
+                save_data_time = timestamp_hours[current_hour][0] # TODO: era current_hour - 1, mas não parece fazer sentido, vai buscar o último timestamp
+                df.to_excel(f'{results_dir}/cF{save_data_time}.xlsx', index=False)
+                controlFile = np.zeros((1, len(oldVehIDs) * 2 + 1))
                 current_hour += 1
 
             step += 1

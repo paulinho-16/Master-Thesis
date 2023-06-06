@@ -1,5 +1,6 @@
 # Project specific files
 output/
+results/
 nodes/variables_*.pkl
 
 # Byte-compiled / optimized / DLL files
