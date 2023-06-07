@@ -46,6 +46,35 @@ def initialize_variables(node_name, network_file, node_sensors, entries_exits_fi
 
     return entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs
 
+# get the edges that serve as a continuation of an entry/exit edge
+def get_linear_edges(network, edge_id):
+    edges = [edge_id]
+    previous_edges = list(network.getEdge(edge_id).getIncoming().keys())
+    following_edges = list(network.getEdge(edge_id).getOutgoing().keys())
+
+    while len(previous_edges) == 1:
+        outgoing_edges = list(previous_edges[0].getOutgoing().keys())
+        if len(outgoing_edges) > 1:
+            break
+        edges.append(previous_edges[0].getID())
+        previous_edges = list(previous_edges[0].getIncoming().keys())
+
+    while len(following_edges) == 1:
+        incoming_edges = list(following_edges[0].getIncoming().keys())
+        if len(incoming_edges) > 1:
+            break
+        edges.append(following_edges[0].getID())
+        following_edges = list(following_edges[0].getOutgoing().keys())
+
+    return edges
+
+def get_node(network, flow_speed_min, edge_id):
+    for node in flow_speed_min.keys():
+        if flow_speed_min[node][0] == 'in' and edge_id in get_linear_edges(network, network.getNode(node).getOutgoing()[0].getID()):
+            return node
+        elif flow_speed_min[node][0] == 'out' and edge_id in get_linear_edges(network, network.getNode(node).getIncoming()[0].getID()):
+            return node
+
 def get_entry_exit_variables(entry_nodes, exit_nodes, variables):
     entry_exit_variables = {} # edge_id : (variable, flow)
     for node in entry_nodes:
@@ -249,11 +278,18 @@ if __name__ == '__main__':
                     # TODO: np.vstack of "controlFile" variable (25 values), first the main entries/exits (real/simulated values), then rounded TTS, then the remaining entries/exits -> done
                     controlFile_list = []
                     for edge_id in sorted(sensors_edges.keys()): # save the flow values of the sensor edges
+                        node = get_node(network, flow_speed_min, edge_id)
                         controlFile_list.extend([variables_values[variables[edge_id]['root_var']][0], flow_speed_min[node][1] * 60])
                     controlFile_list.append(round(TTS)) # TODO: understand what TTS means and how it is updated
                     for edge_id in sorted(entry_exit_variables.keys()): # save the flow values of the remaining entry and exit edges
                         if not any(edge_id in lst[1] for lst in sensors_coverage.values()):
-                            controlFile_list.extend([entry_exit_variables[edge_id][1], flow_speed_min[node][1] * 60]) # TODO: no código do artigo usa Xcomplete nalgumas vars, adaptar isso
+                            node = get_node(network, flow_speed_min, edge_id)
+                            if variables[edge_id]['root_var'] in free_variables_order:
+                                var_index = free_variables_order.index(variables[edge_id]['root_var'])
+                                controlFile_list.extend([closest_feasible_X_free_relative_error[var_index], flow_speed_min[node][1] * 60])
+                            else:
+                                var_index = eq_variables.index(variables[edge_id]['root_var'])
+                                controlFile_list.extend([Xcomplete[var_index][0], flow_speed_min[node][1] * 60])
                     
                     controlFile = np.vstack([controlFile, controlFile_list])
 
@@ -424,7 +460,7 @@ if __name__ == '__main__':
                 # fn.saveState(current_hour)  # one can save simulation state e.g., each hour (simulation can be thus reloaded and simulated from this point in time)
                 TTS = 0
                 save_data_time = timestamp_hours[current_hour][0] # TODO: era current_hour - 1, mas não parece fazer sentido, vai buscar o último timestamp
-                df.to_excel(f'{results_dir}/cF{save_data_time}.xlsx', index=False)
+                df.to_excel(f'{results_dir}/flow_{save_data_time}.xlsx', index=False)
                 controlFile = np.zeros((1, len(oldVehIDs) * 2 + 1))
                 current_hour += 1
 
