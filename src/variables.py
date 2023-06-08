@@ -25,7 +25,7 @@ def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variab
             node_sensors[node_name].append(sensor)
 
     if node_name == 'Article': # TODO: APAGAR - é só para ficar com a mesma numeração que o artigo
-        replacement_mapping = {'q12': 'q1', 'x17': 'x1', 'q4': 'q2', 'x22': 'x2', 'q10': 'q3', 'x14': 'x3', 'q5': 'q4', 'x15': 'x4', 'q8': 'q5', 'x18': 'x5', 'q7': 'q6', 'x23': 'x6', 'x16': 'x7', 'x21': 'x8', 'x13': 'x14', 'x2': 'x15', 'x2': 'x15', 'x24': 'x10', 'x6': 'x11', 'x3': 'x12', 'x11': 'x13', 'x1': 'x16', 'x2': 'x15'}
+        replacement_mapping = {'q12': 'q1', 'q4': 'q2', 'q10': 'q3', 'q5': 'q4', 'q8': 'q5', 'q7': 'q6', 'x13': 'x1', 'x22': 'x2', 'x18': 'x3', 'x19': 'x4', 'x14': 'x5', 'x23': 'x6', 'x16': 'x7', 'x21': 'x8', 'x24': 'x10', 'x6': 'x11', 'x3': 'x12', 'x11': 'x13', 'x15': 'x14', 'x2': 'x15', 'x1': 'x16'}
         variable = replacement_mapping[variable] if variable in replacement_mapping.keys() else variable
     
     return variable

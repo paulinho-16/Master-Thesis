@@ -1,6 +1,6 @@
 ### Entry and exit nodes of Article:
-Entry nodes: ['J39', 'J35', 'J28', 'J40', 'J358', 'J26', '497734']
-Exit nodes: ['4147717192', 'J41', 'J270', 'J24', 'J168']
+Entry nodes: ['J34', 'J38', 'J344', '287314139', 'J332', 'J346', '497734']
+Exit nodes: ['4147717192', 'J246', 'J637', '334707187', 'J183']
 
 ### Entry and exit nodes of Nó do Areinho:
 Entry nodes: ['319327528', '3693345069', '124375189']

@@ -93,6 +93,15 @@ def get_sensors_edges(network, sensors):
     
     return sensors_edges
 
+def get_covered_calibrators(calibrators, sensors_edges, covered_edges):
+    covered_calibrators = {}
+    for calib in calibrators.keys():
+        for edges in covered_edges:
+            if calibrators[calib] in edges:
+                covered_calibrators[calib] = sensors_edges[edges[0]]
+    
+    return covered_calibrators
+
 def get_sensors_data(node_name, sensors, data_file):
     sensors_dfs = {} # id : dataframe
     df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
@@ -201,10 +210,8 @@ if __name__ == '__main__':
     free_variables_target = {var: 5 for var in free_variables[node_name][0]} # TODO: read the target values of the free variables from the Here API
     entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs = initialize_variables(node_name, network_file, node_sensors, entries_exits_file)
     sensors_edges = get_sensors_edges(network, sensors)
-    covered_calibrators = {}
-    for calib in calibrators.keys():
-        if calibrators[calib] in sensors_edges.keys():
-            covered_calibrators[calib] = sensors_edges[calibrators[calib]]
+    covered_edges = [edges[1] for sensor, edges in sensors_coverage.items() if sensor in node_sensors.keys()]
+    covered_calibrators = get_covered_calibrators(calibrators, sensors_edges, covered_edges)
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
     with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'rb') as f:
         variables = pickle.load(f)
