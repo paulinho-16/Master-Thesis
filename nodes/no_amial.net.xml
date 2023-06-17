@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-05-22 15:27:58 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-06-14 17:41:36 by Eclipse SUMO netedit Version 1.15.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
@@ -352,7 +352,7 @@
             <param key="origId" value="13798688"/>
         </lane>
     </edge>
-    <edge id="13798688#1" from="128616477" to="128616478" name="Rua do Amial" priority="11" type="highway.secondary" spreadType="center" shape="7489.50,13691.41 7491.08,13674.60 7496.30,13655.09 7502.32,13638.02 7508.08,13628.90">
+    <edge id="13798688#1" from="128616477" to="128616478" name=" Rotunda do Amial" priority="11" type="highway.secondary" spreadType="center" shape="7489.50,13691.41 7491.08,13674.60 7496.30,13655.09 7502.32,13638.02 7508.08,13628.90">
         <lane id="13798688#1_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="52.17" shape="7490.12,13684.79 7491.08,13674.60 7496.30,13655.09 7502.32,13638.02 7504.26,13634.94">
             <param key="origId" value="13798688"/>
         </lane>
@@ -367,7 +367,7 @@
             <param key="origId" value="13798697"/>
         </lane>
     </edge>
-    <edge id="13798716#0" from="128617100" to="128617101" name="Rua do Amial" priority="11" type="highway.secondary" spreadType="center" shape="7521.33,13630.28 7522.58,13641.53 7520.45,13659.83 7511.33,13684.22 7503.53,13700.01">
+    <edge id="13798716#0" from="128617100" to="128617101" name=" Rotunda do Amial" priority="11" type="highway.secondary" spreadType="center" shape="7521.33,13630.28 7522.58,13641.53 7520.45,13659.83 7511.33,13684.22 7503.53,13700.01">
         <lane id="13798716#0_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="59.81" shape="7522.13,13637.48 7522.58,13641.53 7520.45,13659.83 7511.33,13684.22 7506.34,13694.32">
             <param key="origId" value="13798716"/>
         </lane>
@@ -377,12 +377,12 @@
             <param key="origId" value="13798716"/>
         </lane>
     </edge>
-    <edge id="13798768" from="128616478" to="128617100" priority="11" type="highway.secondary" spreadType="center">
+    <edge id="13798768" from="128616478" to="128617100" name=" Rotunda do Amial" priority="11" type="highway.secondary" spreadType="center">
         <lane id="13798768_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="3.05" shape="7512.71,13629.38 7515.75,13629.70">
             <param key="origId" value="13798768"/>
         </lane>
     </edge>
-    <edge id="13798803" from="128617101" to="128616477" priority="11" type="highway.secondary" spreadType="center" shape="7503.53,13700.01 7495.87,13696.53 7489.50,13691.41">
+    <edge id="13798803" from="128617101" to="128616477" name=" Rotunda do Amial" priority="11" type="highway.secondary" spreadType="center" shape="7503.53,13700.01 7495.87,13696.53 7489.50,13691.41">
         <lane id="13798803_0" index="0" disallow="tram rail_urban rail rail_electric rail_fast ship" speed="27.78" length="6.54" shape="7499.39,13698.13 7495.87,13696.53 7493.79,13694.86">
             <param key="origId" value="13798803"/>
         </lane>

@@ -34,10 +34,12 @@
 	<poi id="router_8" color="green" layer="202.00" x="8181.52414823543" y="13373.409377442074" type="router" name="448858673" />
 	<poi id="x25" color="cyan" layer="202.00" x="8273.0" y="13370.84" type="flow variable" name="480140399" />
 	<poi id="x26" color="cyan" layer="202.00" x="8276.02" y="13339.52" type="flow variable" name="547657333#2" />
-	<poi id="x27" color="cyan" layer="202.00" x="8291.77" y="13383.220000000001" type="flow variable" name="547657335" />
-	<poi id="x28" color="cyan" layer="202.00" x="8281.880000000001" y="13355.529999999999" type="flow variable" name="547657330" />
+	<poi id="x27" color="0,0,128" layer="202.00" x="8208.248453785152" y="13280.251672266279" type="flow variable (lane)" name="480140405_0" />
+	<poi id="x28" color="0,0,128" layer="202.00" x="8210.06897065872" y="13282.887201991949" type="flow variable (lane)" name="480140405_1" />
+	<poi id="x29" color="cyan" layer="202.00" x="8291.77" y="13383.220000000001" type="flow variable" name="547657335" />
+	<poi id="x30" color="cyan" layer="202.00" x="8281.880000000001" y="13355.529999999999" type="flow variable" name="547657330" />
 	<poi id="router_9" color="green" layer="202.00" x="8269.129823262521" y="13327.891110162178" type="router" name="547657333#2" />
-	<poi id="router_10" color="green" layer="202.00" x="8161.099999999999" y="13330.9675" type="router" name="13798545#0" />
-	<poi id="x29" color="cyan" layer="202.00" x="8330.92" y="13310.23" type="flow variable" name="480140406" />
-	<poi id="x30" color="cyan" layer="202.00" x="8031.780000000001" y="13490.96" type="flow variable" name="480084928" />
+	<poi id="router_10" color="green" layer="202.00" x="8134.633110211716" y="13335.917739530067" type="router" name="480084929#0" />
+	<poi id="x31" color="cyan" layer="202.00" x="8330.92" y="13310.23" type="flow variable" name="480140406" />
+	<poi id="x32" color="cyan" layer="202.00" x="8031.780000000001" y="13490.96" type="flow variable" name="480084928" />
 </additional>
