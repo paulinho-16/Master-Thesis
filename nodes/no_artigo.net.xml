@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-06-07 18:17:12 by Eclipse SUMO netconvert Version 1.15.0
+<!-- generated on 2023-06-19 11:23:42 by Eclipse SUMO netedit Version 1.15.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value=".\nodes\no_artigo.net.xml"/>
+        <sumo-net-file value="C:\Users\Paulinho\Desktop\Master-Thesis\nodes\no_artigo.net.xml"/>
     </input>
 
     <output>
-        <output-file value=".\nodes\no_artigo.net.xml"/>
+        <output-file value="C:\Users\Paulinho\Desktop\Master-Thesis\nodes\no_artigo.net.xml"/>
     </output>
 
     <processing>
@@ -17,10 +17,6 @@
         <offset.disable-normalization value="true"/>
         <lefthand value="0"/>
     </processing>
-
-    <edge_removal>
-        <remove-edges.isolated value="true"/>
-    </edge_removal>
 
     <junctions>
         <no-turnarounds value="true"/>
@@ -32,6 +28,10 @@
     <pedestrian>
         <walkingareas value="0"/>
     </pedestrian>
+
+    <netedit>
+        <additional-files value="C:\Users\Paulinho\Desktop\Master-Thesis\nodes\no_artigo_poi.xml"/>
+    </netedit>
 
 </configuration>
 -->
