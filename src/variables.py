@@ -77,7 +77,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
 
                     process_list.append(conn_outgoing[0])
 
-            elif len(conn_incoming) > 1 and len(conn_outgoing) == 1: # case of a merging junction, analyse if it can be processable                        
+            elif len(conn_incoming) > 1 and len(conn_outgoing) == 1: # case of a merging junction, analyse if it can be processable
                 processable = True
                 for m_edge in conn_incoming:
                     if m_edge.getID() not in variables:
@@ -112,7 +112,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
                     conns_edge_lane = [(conn.getFrom(), conn.getFromLane(), conn) for conn in connections if conn.getFrom() in conn_incoming and conn.getTo() == conn_outgoing[0]]
                     incoming_lanes = {}
                     for edge_lane in conns_edge_lane:
-                        incoming_lanes.setdefault(edge_lane[0], []).append(edge_lane[1].getID())
+                        incoming_lanes.setdefault(edge_lane[0], set()).add(edge_lane[1].getID())
 
                     equation_ready = True
                     for edge in incoming_lanes.keys():
@@ -148,9 +148,10 @@ def process(node_name, process_list, variables, equations, variable_count, route
                         process_list.append(f_edge)
                 
                 # append a new equation
-                following_variable = variables[edge.getID()]['root_var']
-                equation = f'{following_variable} = ' + ' + '.join([variables[f_edge.getID()]['root_var'] for f_edge in conn_outgoing])
-                equations.add(equation)
+                if from_edge.getID() == edge.getID():
+                    following_variable = variables[edge.getID()]['root_var']
+                    equation = f'{following_variable} = ' + ' + '.join([variables[f_edge.getID()]['root_var'] for f_edge in conn_outgoing])
+                    equations.add(equation)
 
                 # place a router on the split edge if not already placed
                 if not router_generated:
