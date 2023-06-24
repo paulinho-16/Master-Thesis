@@ -221,7 +221,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
 
             # extreme cases of merges in complex nodes, having many incoming and outgoing edges
             for to_edge in reversed_pairs.keys():
-                if len(reversed_pairs[to_edge]) == 1: # case where the to_edge is just a continuation of the previous edge
+                if len(reversed_pairs[to_edge]) == 1 and next(iter(reversed_pairs[to_edge].keys())).getID() in divided_edges: # case where the to_edge is just a continuation of the previous divided edge
                     from_edge = next(iter(reversed_pairs[to_edge].keys()))
                     if from_edge.getID() not in variables:
                         if to_edge not in future_processing:
@@ -229,8 +229,13 @@ def process(node_name, process_list, variables, equations, variable_count, route
                         continue
 
                     if to_edge.getID() not in variables:
+                        var_values = set({conn: var for conn, var in variables[from_edge.getID()][reversed_pairs[to_edge][from_edge][0].getFromLane().getID()].items() if conn.getToLane().getEdge() == to_edge}.values())
+                        if len(var_values) == 1:
+                            variables[to_edge.getID()] = {'root_var': var_values.pop()}
+                        else:
+                            raise Exception(f"The edge {to_edge.getID()} has more than one root variable.")
+                        
                         lane_variables = {}
-                        variables[to_edge.getID()] = {'root_var': variables[from_edge.getID()]['root_var']} if len(reversed_pairs[to_edge][from_edge]) > 1 else {'root_var': variables[from_edge.getID()][reversed_pairs[to_edge][from_edge][0].getFromLane().getID()]}
                         for lane in to_edge.getLanes():
                             for conn in reversed_pairs[to_edge][from_edge]:
                                 if conn.getToLane().getID() == lane.getID():
@@ -270,18 +275,21 @@ def process(node_name, process_list, variables, equations, variable_count, route
                     equation = f'{edge_variable} = ' + ' + '.join([var for var in previous_variables])
                     equations.add(equation)
 
+                    # TODO: após o algoritmo estar a funcionar a 100%, apagar os comentários abaixo
                     # update the pending_merges list
-                    outgoing_edges = list(to_edge.getOutgoing().keys())
-                    if len(outgoing_edges) == 1:
-                        pending = False
-                        for incoming_edge in outgoing_edges[0].getIncoming().keys():
-                            if incoming_edge != to_edge and incoming_edge.getID() not in variables:
-                                pending = True
+                    # outgoing_edges = list(to_edge.getOutgoing().keys())
+                    # if len(outgoing_edges) == 1:
+                    #     pending = False
+                    #     for incoming_edge in outgoing_edges[0].getIncoming().keys():
+                    #         if incoming_edge != to_edge and incoming_edge.getID() not in variables:
+                    #             pending = True
 
-                        if not pending:
-                            while outgoing_edges[0] in pending_merges:
-                                pending_merges.remove(outgoing_edges[0])
-                            process_list.append(to_edge)
+                    #     if not pending:
+                    #         while outgoing_edges[0] in pending_merges:
+                    #             pending_merges.remove(outgoing_edges[0])
+                    #         process_list.append(to_edge)
+
+                    process_list.append(to_edge)
 
                 else:
                     # check if the equation is ready to be added (updated variables)
