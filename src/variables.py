@@ -50,7 +50,6 @@ def process(node_name, process_list, variables, equations, variable_count, route
     while process_list:
         edge = process_list.popleft()
         connections = edge.getToNode().getConnections()
-        pending_merge_appended = False
         connection_pairs = {} # from_edge: {to_edge: [conn, ...], ...}
 
         for conn in connections:
@@ -135,9 +134,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
                     while conn_outgoing[0] in pending_merges:
                         pending_merges.remove(conn_outgoing[0])
                 else:
-                    if not pending_merge_appended:
-                        pending_merges.append(conn_outgoing[0])
-                        pending_merge_appended = True
+                    pending_merges.append(conn_outgoing[0])
 
         elif len(conn_incoming) == 1 and len(conn_outgoing) > 1: # case of a splitting edge, assign new variables
             # assign new variables to the following edges
@@ -252,7 +249,11 @@ def process(node_name, process_list, variables, equations, variable_count, route
                         if f_edge.getID() not in variables:
                             processed = False
                     if not processed:
-                        break
+                        pending_merges.append(to_edge)
+                        continue
+
+                    if to_edge in pending_merges:
+                        pending_merges.remove(to_edge)
 
                     variable = get_variable_name(to_edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
                     lane_variables = {}
@@ -312,7 +313,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
 
                     # append a new equation
                     following_variable = variables[to_edge.getID()]['root_var']
-                    if equation_ready and not any(equation.startswith(f'{following_variable} =') for equation in equations):
+                    if equation_ready:
                         equation = f'{following_variable} = ' + ' + '.join(set([variables[p_edge.getID()][lane.getID()] if type(variables[p_edge.getID()][lane.getID()]) == str else variables[p_edge.getID()][lane.getID()][connection] for (p_edge, lane, connection) in conns_edge_lane]))
                         equations.add(equation)
     
@@ -348,7 +349,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
         merging_edges = following_edge.getFromNode().getIncoming()
         
         for edge in merging_edges:
-            if edge in pending_edges:
+            if edge in pending_edges and edge.getID() not in variables:
                 variable = get_variable_name(edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
                 lane_variables = {}
                 variables[edge.getID()] = {'root_var': variable}
