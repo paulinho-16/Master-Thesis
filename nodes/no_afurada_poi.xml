@@ -30,7 +30,6 @@
 	<poi id="x21" color="cyan" layer="202.00" x="5350.495" y="10408.6" type="flow variable" name="370332343" />
 	<poi id="x22" color="cyan" layer="202.00" x="5399.5" y="10398.1" type="flow variable" name="370332326#1" />
 	<poi id="router_8" color="green" layer="202.00" x="5322.9182787416285" y="10406.619905286794" type="router" name="370332326#0-AddedOffRampEdge" />
-	<poi id="x23" color="blue" layer="202.00" x="5345.35" y="10281.61" type="flow variable" name="483715763#1" />
 	<poi id="x24" color="blue" layer="202.00" x="5244.64" y="10161.71" type="flow variable" name="98835987" />
 	<poi id="x25" color="blue" layer="202.00" x="5180.219999999999" y="10082.59" type="flow variable" name="370332333" />
 	<poi id="x26" color="cyan" layer="202.00" x="5168.049999999999" y="10106.6725" type="flow variable" name="1081839842" />

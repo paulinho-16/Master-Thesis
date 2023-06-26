@@ -46,6 +46,15 @@ def gen_pinpoint(edge, id, type, color, additional_tag):
 
     ET.SubElement(additional_tag, 'poi', id=id, color=color, layer='202.00', x=str(pos[0]), y=str(pos[1]), type=type, name=edge.getID())
 
+def get_edge_variables(variables, edge_id):
+    vars = set()
+    for lane_vars in variables[edge_id].values():
+        if isinstance(lane_vars, str):
+            vars.add(lane_vars)
+        elif isinstance(lane_vars, dict):
+            vars.update(lane_vars.values())
+    return vars
+
 def process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers):
     while process_list:
         edge = process_list.popleft()
@@ -72,16 +81,28 @@ def process(node_name, process_list, variables, equations, variable_count, route
                 if conn_outgoing[0] not in future_processing:
                     future_processing.append(conn_outgoing[0])
                 continue
+            
+            previous_vars = None
+            if conn_outgoing[0].getID() in variables:
+                previous_vars = variables[conn_outgoing[0].getID()]
 
-            if conn_outgoing[0].getID() not in variables:
-                lane_variables = {}
-                variables[conn_outgoing[0].getID()] = {'root_var': variables[conn_incoming[0].getID()][conn.getFromLane().getID()]}
-                for lane in conn_outgoing[0].getLanes():
-                    variable = variables[conn_incoming[0].getID()]['root_var']
-                    lane_variables[lane.getID()] = variable
-                variables[conn_outgoing[0].getID()] |= lane_variables
+            lane_variables = {}
+            variables[conn_outgoing[0].getID()] = {'root_var': variables[conn_incoming[0].getID()][conn.getFromLane().getID()]}
+            for lane in conn_outgoing[0].getLanes():
+                variable = variables[conn_incoming[0].getID()]['root_var']
+                lane_variables[lane.getID()] = variable
+            variables[conn_outgoing[0].getID()] |= lane_variables
 
-                process_list.append(conn_outgoing[0])
+            if previous_vars and previous_vars != variables[conn_outgoing[0].getID()]: # if the previous variables differ from the new variables, update the outdated equations
+                updated_equations = set()
+                for equation in equations:
+                    for var_name, var_value in previous_vars.items():
+                        equation = equation.replace(var_value, variables[conn_outgoing[0].getID()].get(var_name, var_value))
+                    updated_equations.add(equation)
+                equations.clear()
+                equations.update(updated_equations)
+
+            process_list.append(conn_outgoing[0])
 
         elif len(conn_incoming) > 1 and len(conn_outgoing) == 1: # case of a merging junction, analyse if it can be processable
                 processable = True
@@ -342,7 +363,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
             if p_edge in pending_edges:
                 pending_edges.remove(pending_edge)
                 break
-
+    
     # continue the algorithm by assigning a new variable to one of the pending edges, allowing processing of pending merges
     while pending_merges:
         following_edge = pending_merges.pop(0)
@@ -359,10 +380,12 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
                 gen_pinpoint(edge, variable, 'flow variable', 'blue', additional_tag)
                 
                 variable_count += 1
-                pending_edges.remove(edge)
+                for pe in pending_edges:
+                    if pe in variables:
+                        pending_edges.remove(pe)
                 process_list.append(edge)
                 break
-
+        
         variable_count, router_count, pending_merges = process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
 
     # process the pending edges in future_processing
@@ -374,6 +397,12 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
         if edge.getID() not in variables:
             pending_edges.append(edge)
             print(f"Edge {edge.getID()} has no variable assigned.")
+
+    # remove the outdated POIs
+    for poi_tag in additional_tag.findall('poi'):
+        edge_id = poi_tag.get('name')
+        if poi_tag.get('color') == 'blue' and poi_tag.get('id') not in get_edge_variables(variables, edge_id):
+            additional_tag.remove(poi_tag)
 
     # register the variables assignments in a pickle file
     with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'wb') as f:
