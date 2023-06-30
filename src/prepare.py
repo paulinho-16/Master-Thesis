@@ -164,51 +164,14 @@ def prepare_data():
     format.update({'bold': True, 'border': 1, 'bottom': 1, 'right': 1})
     header_format = workbook.add_format(format)
 
+    print(f"\n::: Starting processing sensor data :::\n")
     for file in Path(data_dir).iterdir():
-        if file.is_file() and file.suffix == '.xlsx' and not file.name.startswith('~$') and file.name not in ['sensor_locations.xlsx', 'article_data.xlsx', 'sensor_data.xlsx']: # first data format - TODO: após ter todos os dados no segundo formato, apagar este if
-            sensor = file.name.split('_data.xlsx')[0]
-            worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
-            sensor_sheet = workbook.add_worksheet(worksheet_name)
-
-            columns = ['carFlows', 'carSpeeds', 'truckFlows', 'truckSpeeds']
-            result = pd.DataFrame(columns=columns)
-            timestamp_days = np.array([])
-            worksheets = pd.ExcelFile(f'{data_dir}/{file.name}').sheet_names
-            for sheet_name in worksheets:
-                if sheet_name.startswith('Traffic'):
-                    df = pd.read_excel(file, sheet_name=sheet_name)
-
-                    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-                    timestamp_days = np.append(timestamp_days, df['Timestamp'].dt.strftime('%Y-%m-%d').unique())
-
-                    df['vehicle_type'] = df['VehicleTypeId'].map({3: 'car', 4: 'car', 5: 'truck', 6: 'truck'}) # TODO: verify if the car and truck classes are correctly mapped
-                    df.set_index('Timestamp', inplace=True)
-                    grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
-
-                    result_sheet = pd.DataFrame({
-                        'carFlows': grouped['MedidasCCVDetailId'].count()['car'],
-                        'carSpeeds': grouped['Velocidade'].mean()['car'],
-                        'truckFlows': grouped['MedidasCCVDetailId'].count()['truck'],
-                        'truckSpeeds': grouped['Velocidade'].mean()['truck']
-                    })
-                    result = pd.concat([result, result_sheet], ignore_index=True)
-                    result = result.fillna(0)
-
-            if days.size == 0:
-                days = timestamp_days
-            elif not np.array_equal(days, timestamp_days):
-                print(f"Inconsistent timestamps in file {file.name}!")
-
-            # create the sensor worksheet
-            sensor_sheet.set_column('A:D', 15)
-            for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
-                sensor_sheet.write(title_cell, title_name, header_format)
-                sensor_sheet.write_column(value_cell, result[title_name], base_format)
-
-        elif file.is_dir(): # second data format
+        if file.is_dir():
             sensor = file.name
             worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
             sensor_sheet = workbook.add_worksheet(worksheet_name)
+
+            print(f"Processing data from the sensor {sensor}...")
 
             columns = ['carFlows', 'carSpeeds', 'truckFlows', 'truckSpeeds']
             result = pd.DataFrame(columns=columns)

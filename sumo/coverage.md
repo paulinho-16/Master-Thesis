@@ -58,11 +58,6 @@
 95162996-AddedOnRampEdge
 95162996-AddedOffRampEdge
 
-### Edges covered by sensor AEDL - A43 3+100D PM1211 (95162996):
-95162996
-95162996-AddedOnRampEdge
-95162996-AddedOffRampEdge
-
 ### Edges covered by sensor AEDL - A44 6+425 CT3681 (97721366):
 97721366
 
@@ -93,71 +88,6 @@
 139001717#0
 139001717#0-AddedOffRampEdge
 
-### Edges covered by sensor A43 2+416D CV717 (95163009):
-95163009
-
-### Edges covered by sensor A43 5+975C CV719 (381421954):
-381421954
-
-### Edges covered by sensor A43 3+840D CV718 (95162996):
-95162996
-95162996-AddedOnRampEdge
-95162996-AddedOffRampEdge
-
-### Edges covered by sensor A44 5+750C CV748 (95117812#2):
-95117812#2
-712274397#0
-
-### Edges covered by sensor A44 5+435C CVT742 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A44 5+380D CVT745 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A44 5+380C CVT743 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A44 5+322D CVT746 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A44 5+322C CVT744 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A44 5+165D CVT740 (95117787#0):
-95117787#0
-712274397#1-AddedOffRampEdge
-712274397#1
-712274397#1-AddedOnRampEdge
-
-### Edges covered by sensor A44 5+165C CVT739 (95117787#0):
-95117787#0
-712274397#1-AddedOffRampEdge
-712274397#1
-712274397#1-AddedOnRampEdge
-
-### Edges covered by sensor A44 4+850D CV706 (474423808#0):
-474423808#0
-474423809
-95362523
-
-### Edges covered by sensor A20 3+600D CV710 (139462615#0):
-139462615#0
-
 ### Edges covered by sensor AEDL - A20 13+890 CT3711 (479365566-AddedOffRampEdge):
 479365566-AddedOffRampEdge
 479365566
@@ -174,49 +104,8 @@
 1058622673
 1058622674
 
-### Edges covered by sensor A20 2+150D CV709 (29043523):
-29043523
-
-### Edges covered by sensor A20 0+575C (139462593):
-139462593
-
-### Edges covered by sensor A1 300+450C CV715 (95367763#0):
-95367763#0
-
-### Edges covered by sensor A44 7+200C CV707 (139455445):
-139455445
-
-### Edges covered by sensor A1 300+450C CF (95367763#0):
-95367763#0
-
-### Edges covered by sensor A44 5+435D CVT741 (712274397#1):
-712274397#1
-712274397#1-AddedOnRampEdge
-712274397#1-AddedOffRampEdge
-95117787#0
-
-### Edges covered by sensor A1 298+680D (Norte) (95367752#2):
-95367752#2
-332930857
-
-### Edges covered by sensor A1 298+680D (Sul) (95367752#2):
-95367752#2
-332930857
-
-### Edges covered by sensor A1 298+680D (Este) (95367752#2):
-95367752#2
-332930857
-
-### Edges covered by sensor A1 298+680D (Oeste) (95367752#2):
-95367752#2
-332930857
-
 ### Edges covered by sensor AEDL - A20 0+650 CT3683 (139462593):
 139462593
-
-### Edges covered by sensor A1 297+150C CV713 (557707270):
-557707270
-557730376
 
 ### Edges covered by sensor AEDL - A1 297+975 CT3687 (95367752#1):
 95367752#1
@@ -263,34 +152,6 @@
 25410462
 -238872916
 -764079429
-
-### Edges covered by sensor AEDL - A1 300+920C PM1209 (95367763#1):
-95367763#1
-95367763#1-AddedOnRampEdge
-460986038
-460986038-AddedOffRampEdge
-
-### Edges covered by sensor AEDL - A1 300+920D PM1210 (95367763#1):
-95367763#1
-95367763#1-AddedOnRampEdge
-460986038
-460986038-AddedOffRampEdge
-
-### Edges covered by sensor A1 302+460C CV716 (483715765):
-483715765
-12300807-AddedOnRampEdge
-12300807
-12300807-AddedOffRampEdge
-460839284
-
-### Edges covered by sensor A1 298+680D CV714 (95367752#2):
-95367752#2
-332930857
-
-### Edges covered by sensor AEDL - A1 297+975C PM1208 (95367752#1):
-95367752#1
-95367752#1-AddedOnRampEdge
-95367752#1-AddedOffRampEdge
 
 ### Edges covered by sensor CH:0272.01 (ES_N14_0):
 ES_N14
