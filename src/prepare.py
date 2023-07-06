@@ -62,16 +62,6 @@ def gen_entry_exit_nodes(node_name, nodes, eef):
         elif len(incoming_edges) == 1 and len(outgoing_edges) == 1 and not node.getConnections(): # case where it is simultaneously an entry and exit node (dead end, but with an entry and an exit of the network)
             entry_nodes.append(node)
             exit_nodes.append(node)
-        elif len(incoming_edges) == 1 and len(outgoing_edges) == 2: # case of an entry of the network through a roundabout
-            if 'rotunda' in incoming_edges[0].getName().lower() or 'roundabout' in incoming_edges[0].getName().lower():
-                for edge in outgoing_edges:
-                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
-                        entry_nodes.append(node)
-        elif len(incoming_edges) == 2 and len(outgoing_edges) == 1: # case of an exit of the network through a roundabout
-            if 'rotunda' in outgoing_edges[0].getName().lower() or 'roundabout' in outgoing_edges[0].getName().lower():
-                for edge in incoming_edges:
-                    if 'rotunda' not in edge.getName().lower() and 'roundabout' not in edge.getName().lower():
-                        exit_nodes.append(node)
     
     print(f"\nFound {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes for the network node {node_name}.")
     print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
