@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-06-25 16:56:15 by Eclipse SUMO netedit Version 1.15.0
+<!-- generated on 2023-07-05 16:37:23 by Eclipse SUMO netedit Version 1.15.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
@@ -1141,6 +1141,5 @@
     <connection from=":4723433446_2" to="479198390" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":4723433446_2" to="479198390" fromLane="1" toLane="1" dir="s" state="M"/>
     <connection from=":9318358086_0" to="1009943383" fromLane="0" toLane="0" dir="s" state="M"/>
-
 
 </net>

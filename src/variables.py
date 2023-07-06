@@ -350,8 +350,6 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
     
     variable_count, router_count, pending_merges = process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
 
-    print(f"Generated {router_count - 1} routers.")
-
     pending_edges = []
     for edge in network.getEdges():
         if edge.getID() not in variables:
@@ -408,7 +406,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
     with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'wb') as f:
         pickle.dump(variables, f)
 
-    return variable_count, sorted(equations)
+    return variable_count, router_count, sorted(equations)
 
 def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
     additional_tag = ET.Element('additional')
@@ -471,11 +469,11 @@ def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensor
         variable_count += 1
 
     process_list = collections.deque(process_list)
-    variable_count, equations = calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
+    variable_count, router_count, equations = calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
 
     write_xml(additional_tag, network_file.replace('.net', '_poi'))
 
-    return variable_count, equations
+    return variable_count, router_count, equations
 
 def highest_variable(equation):
     """
@@ -528,7 +526,7 @@ def reduce_equations(equations):
 
     simplified_equations = []
     removed_rhs_equations = []
-    new_equations = []
+    new_equations = set()
 
     print(f'Initial equations ({len(equations)}): {equations}')
 
@@ -586,7 +584,9 @@ def reduce_equations(equations):
         ordered_lhs = order_terms(new_eq.lhs)
         ordered_rhs = order_terms(new_eq.rhs)
 
-        new_equations.append(f'{str(ordered_lhs)} = {str(ordered_rhs)}')
+        new_equations.add(f'{str(ordered_lhs)} = {str(ordered_rhs)}')
+
+    new_equations = sorted(new_equations)
 
     print(f'Simplified equations ({len(new_equations)}): {new_equations}')
 
@@ -597,7 +597,7 @@ def process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef
     entry_nodes_ids, exit_nodes_ids = get_entry_exit_nodes(entries_exits_file, node_name)
     entry_nodes, exit_nodes = [network.getNode(node_id) for node_id in entry_nodes_ids], [network.getNode(node_id) for node_id in exit_nodes_ids]
 
-    variable_count, equations = gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
+    variable_count, router_count, equations = gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
 
     nsf.write(f'### Sensors of {node_name}:\n')
     for sensor in node_sensors[node_name]:
@@ -617,6 +617,7 @@ def process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef
         ef.write('\n')
     ef.write('\n')
 
+    print(f"Generated {router_count - 1} routers.")
     print(f"Generated {variable_count - 1} variables.\n")
 
 
