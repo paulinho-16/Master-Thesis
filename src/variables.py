@@ -578,7 +578,13 @@ def reduce_equations(equations):
 
         new_eq = sympy.Eq(new_lhs_expr, new_rhs_expr)
 
-        if sum(str(term).count('-') for term in new_eq.args) > sum(str(term).count('+') for term in new_eq.args):
+        string_eq = f'{new_eq.lhs} = {new_eq.rhs}'
+
+        num_terms = len([term for term in eq.split() if term.startswith('x') or term.startswith('q')])
+        num_negative_terms = string_eq.count('-')
+        num_positive_terms = num_terms - num_negative_terms
+
+        if num_negative_terms > num_positive_terms:
             new_eq = sympy.Eq(-1 * new_eq.lhs, -1 * new_eq.rhs)
 
         ordered_lhs = order_terms(new_eq.lhs)
