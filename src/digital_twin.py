@@ -9,13 +9,11 @@ import numpy as np
 import pandas as pd
 import traci
 import pickle
-import herepy
 import sumolib
-import requests
 from pathlib import Path
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators
+from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, write_xml
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
@@ -135,58 +133,38 @@ def reset_flow_speed_min(entry_nodes, exit_nodes):
 
     return flow_speed_min
 
-def get_traffic_intensity(api_key, coordinates):
-    base_url = 'https://traffic.ls.hereapi.com/traffic/6.3/flow.json'
-    params = {
-        'apiKey': api_key,
-        'bbox': f'{coordinates[0]},{coordinates[1]},{coordinates[2]},{coordinates[3]}',
-    }
+def get_flow_edges(entry_node, routers, network):
+    from_edge = entry_node.getOutgoing()[0].getID()
+    next_edge = from_edge
+    router_found = False
+    while not router_found:
+        to_node = network.getEdge(next_edge).getToNode()
+        if len(to_node.getOutgoing()) == 0: # no routers in the possible paths from the entry edge
+            break
+        elif len(to_node.getOutgoing()) != 1:
+            raise Exception(f"Possible missing router on edge {next_edge}.")
 
-    print(base_url, '-', params)
+        next_edge = to_node.getOutgoing()[0].getID()
+        for router in routers:
+            if routers[router][2] == next_edge:
+                router_found = True
+                break
+        to_edge = next_edge
+    
+    return from_edge, to_edge
 
-    response = requests.get(base_url, params=params)
-    data = response.json()
+def generate_flows(flows_file, entry_nodes, routers, network):
+    routes_tag = ET.Element('routes')
+    routes_tag.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+    routes_tag.set('xsi:noNamespaceSchemaLocation', 'http://sumo.dlr.de/xsd/routes_file.xsd')
 
-    print('RESPONSE DATA')
-    print(data)
+    for entry in entry_nodes:
+        entry_node = network.getNode(entry)
+        from_edge, to_edge = get_flow_edges(entry_node, routers, network)
+        ET.SubElement(routes_tag, 'flow', id=f'flow_car_{entry_node.getID()}', type='vtype_car', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.20')
+        ET.SubElement(routes_tag, 'flow', id=f'flow_truck_{entry_node.getID()}', type='vtype_truck', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.10')
 
-    if 'RWS' in data and 'RW' in data['RWS'][0] and 'CF' in data['RWS'][0]['RW'][0]:
-        jam_factor = data['RWS'][0]['RW'][0]['CF'][0]['JF']
-        return jam_factor
-    else:
-        return None
-
-def experimentar_api():
-    network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
-
-    # get the latitude and longitude of the nodes of a given edge in SUMO
-    coords_from = network.getEdge('915252792').getFromNode().getCoord()
-    coords_to = network.getEdge('915252792').getToNode().getCoord()
-
-    # convert the coords to latitude and longitude
-    latitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[1]
-    longitude_start = network.convertXY2LonLat(coords_from[0], coords_from[1])[0]
-    latitude_end = network.convertXY2LonLat(coords_to[0], coords_to[1])[1]
-    longitude_end = network.convertXY2LonLat(coords_to[0], coords_to[1])[0]
-
-    print(latitude_start, longitude_start)
-    print(latitude_end, longitude_end)
-
-    here_api = herepy.TrafficApi('jVB_JfWYklIufkIHgaEGNg')
-    start_coord = [latitude_start, longitude_start]
-    end_coord = [latitude_end, longitude_end]
-
-    print(f'{start_coord}-{end_coord}')
-
-    api_key = 'SGLZFO2SFShUtNG4aGSjjBrR1W-VjqYFKrvDMRxXfuk'
-    coordinates = [start_coord[0], start_coord[1], end_coord[0], end_coord[1]]
-    traffic_intensity = get_traffic_intensity(api_key, coordinates)
-    if traffic_intensity is not None:
-        print(f"Traffic Intensity (Jam Factor) for Coordinates {coordinates}: {traffic_intensity}")
-    else:
-        print("Unable to retrieve traffic intensity for the specified location.")
-
-    print(f"Average Traffic Intensity: {traffic_intensity}")
+    write_xml(routes_tag, flows_file)
 
 if __name__ == '__main__':
     config = load_config()
@@ -223,7 +201,13 @@ if __name__ == '__main__':
     Path(results_dir).mkdir(parents=True, exist_ok=True)
     vehIDs_all = []
 
-    # experimentar_api() # TODO: apagar função após meter requests da API a funcionar
+    # TODO: criar ficheiro dos flows iniciais -> done
+    flows_dir = config.get('dir', 'FLOWS', fallback='./sumo/flows')
+    Path(flows_dir).mkdir(parents=True, exist_ok=True)
+    flows_file = f"{flows_dir}/flows_{network_file.split('.')[-3].split('/')[-1]}.xml"
+    generate_flows(flows_file, entry_nodes, routers, network)
+
+    # TODO: ler intensidades do tráfego nas edges em questão
 
     current_hour = current_min = TTS = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))

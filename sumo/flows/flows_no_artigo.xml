@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+	<flow id="flow_car_J34" type="vtype_car" begin="0.00" end="86400.0" from="E10" to="ES_N10" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J34" type="vtype_truck" begin="0.00" end="86400.0" from="E10" to="ES_N10" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_J38" type="vtype_car" begin="0.00" end="86400.0" from="E12" to="SN_E9" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J38" type="vtype_truck" begin="0.00" end="86400.0" from="E12" to="SN_E9" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_J344" type="vtype_car" begin="0.00" end="86400.0" from="ES_N56_onramp1.299" to="ES_N18" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J344" type="vtype_truck" begin="0.00" end="86400.0" from="ES_N56_onramp1.299" to="ES_N18" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_287314139" type="vtype_car" begin="0.00" end="86400.0" from="E_NS1" to="E_NS8" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_287314139" type="vtype_truck" begin="0.00" end="86400.0" from="E_NS1" to="E_NS8" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_J332" type="vtype_car" begin="0.00" end="86400.0" from="N_ES146" to="N_ES150" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J332" type="vtype_truck" begin="0.00" end="86400.0" from="N_ES146" to="N_ES150" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_J346" type="vtype_car" begin="0.00" end="86400.0" from="N_ES152_onramp1.302" to="N_ES160" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J346" type="vtype_truck" begin="0.00" end="86400.0" from="N_ES152_onramp1.302" to="N_ES160" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_497734" type="vtype_car" begin="0.00" end="86400.0" from="S_NE11" to="S_NE13" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_497734" type="vtype_truck" begin="0.00" end="86400.0" from="S_NE11" to="S_NE13" departPos="free" departSpeed="max" probability="0.10" />
+</routes>
