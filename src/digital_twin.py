@@ -183,7 +183,7 @@ def generate_routes(routes_file, routers, network):
         distributions = get_probability_distributions(len(paths))
 
         for dist in distributions:
-            dist_id = f'routedist_{router_edge}' + ''.join([f'_{d}' for d in dist])
+            dist_id = f'routedist_{router_edge}' + ''.join([f'_{int(d*100)}' for d in dist])
             route_dist_tag = ET.SubElement(routes_tag, 'routeDistribution', id=dist_id)
             for i, path in enumerate(paths):
                 ET.SubElement(route_dist_tag, 'route', refId=f'route_{router_edge}_{i}', probability=f'{dist[i]}')
@@ -430,12 +430,11 @@ if __name__ == '__main__':
                         prob_dists[router][split_edges[0].getID()] = 50
                         prob_dists[router][split_edges[1].getID()] = 50
 
-                # TODO: criar ficheiros com as routes distributions
                 # TODO: averiguar se a ordem de escrita dos valores prob não varia
                 r_dists = {} # router_id : route_distribution_name
                 for router in routers.keys():
                     first_prob, second_prob = prob_dists[router].values()
-                    r_dists[router] = f'routedist_{router}_{first_prob}_{second_prob}'
+                    r_dists[router] = f'routedist_{routers[router][2]}_{first_prob}_{second_prob}'
 
             if step % (1/step_length) == 0: # write results of the second?
                 if step % (60 * (1/step_length)) == 0: # is this condition really needed?
@@ -448,7 +447,6 @@ if __name__ == '__main__':
                         temp_dists = {} # router_id : [temp_dist]
                         for router in routers.keys():
                             temp_dists[router] = []
-                            # temp_dists[router].append()
 
                         # TODO: append new vehicles on the network entries, route distributions, and simulation time to each array -> done
                         for router in routers.keys():
@@ -480,8 +478,7 @@ if __name__ == '__main__':
                         if len(incoming_edges) != 1:
                             raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
                         edgeStart = incoming_edges[0].getID()
-                        edgeStart_extra = "APAGAR" # TODO: ver que edges meter aqui
-                        temp_dists[router], perm_dists[router] = fn.routingDinamically(edgeStart, temp_dists[router], perm_dists[router], edgeStart_extra, time_clean, sim_time, vehIDs_all)
+                        temp_dists[router], perm_dists[router] = fn.routingDinamically(edgeStartPlusOne, temp_dists[router], perm_dists[router], edgeStartPlusOne, time_clean, sim_time, vehIDs_all)
 
                     vehIDs_all = []
 
