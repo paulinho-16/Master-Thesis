@@ -1,4 +1,5 @@
 import re
+from itertools import product
 import xml.etree.cElementTree as ET
 from configparser import ConfigParser, ExtendedInterpolation
 
@@ -110,3 +111,15 @@ def get_calibrators(additionals_file):
         calibrators[calibrator.get('id')] = calibrator.get('edge')
 
     return calibrators
+
+def get_probability_distributions(num_routes):
+    elements = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    combinations = []
+
+    for combo in product(elements, repeat=num_routes):
+        if sum(combo) == 1:
+            combinations.append(combo)
+
+    combinations.sort(reverse=True)
+
+    return combinations

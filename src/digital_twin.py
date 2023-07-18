@@ -13,7 +13,7 @@ import sumolib
 from pathlib import Path
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, write_xml
+from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, get_probability_distributions, write_xml
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
@@ -164,17 +164,69 @@ def generate_flows(flows_file, entry_nodes, routers, network):
         ET.SubElement(routes_tag, 'flow', id=f'flow_car_{entry_node.getID()}', type='vtype_car', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.20')
         ET.SubElement(routes_tag, 'flow', id=f'flow_truck_{entry_node.getID()}', type='vtype_truck', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.10')
 
-    write_xml(routes_tag, flows_file)
+    write_xml(routes_tag, flows_file)   
+
+def generate_routes(routes_file, routers, network):
+    routes_tag = ET.Element('routes')
+    routes_tag.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+    routes_tag.set('xsi:noNamespaceSchemaLocation', 'http://sumo.dlr.de/xsd/routes_file.xsd')
+
+    colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', 'black', 'gray', 'lightgray', 'darkgray', 'orange', 'brown', 'purple', 'pink']
+
+    router_edges = [routers[router][2] for router in routers]
+    for r, router in enumerate(routers):
+        router_edge = routers[router][2]
+        paths = get_possible_paths(router_edge, router_edges, network)
+        for i, path in enumerate(paths):
+            ET.SubElement(routes_tag, 'route', id=f'route_{router_edge}_{i}', edges=path, color=colors[r % len(colors)])
+
+        distributions = get_probability_distributions(len(paths))
+
+        for dist in distributions:
+            dist_id = f'routedist_{router_edge}' + ''.join([f'_{d}' for d in dist])
+            route_dist_tag = ET.SubElement(routes_tag, 'routeDistribution', id=dist_id)
+            for i, path in enumerate(paths):
+                ET.SubElement(route_dist_tag, 'route', refId=f'route_{router_edge}_{i}', probability=f'{dist[i]}')
+
+    write_xml(routes_tag, routes_file)
+
+def get_possible_paths(edge_id, router_edges, network):
+    paths = []
+    visited = set()
+
+    def dfs(current_edge, path):
+        visited.add(current_edge)
+        path.append(current_edge)
+
+        # check if we reached the end of a route: a network exit or another router edge
+        if len(current_edge.getOutgoing()) == 0 or (current_edge.getID() in router_edges and current_edge.getID() != edge_id):
+            paths.append(' '.join([edge.getID() for edge in path]))
+            path.pop()
+            visited.remove(current_edge)
+            return
+
+        for successor_edge in current_edge.getOutgoing():
+            if successor_edge not in visited:
+                dfs(successor_edge, path)
+
+        path.pop()
+        visited.remove(current_edge)
+
+    start_edge = network.getEdge(edge_id)
+    dfs(start_edge, [])
+
+    return paths
 
 if __name__ == '__main__':
     config = load_config()
     node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    node_filename = network_file.split('.')[-3].split('/')[-1]
     network = sumolib.net.readNet(network_file)
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
     eq_variables = get_eq_variables(node_name, equations_file)
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
-    additionals_file = f"{calibrators_dir}/calib_{network_file.split('.')[-3].split('/')[-1]}.add.xml"
+    additionals_file = f"{calibrators_dir}/calib_{node_filename}.add.xml"
     calibrators = get_calibrators(additionals_file)
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
@@ -191,7 +243,7 @@ if __name__ == '__main__':
     covered_edges = [edges[1] for sensor, edges in sensors_coverage.items() if sensor in node_sensors.keys()]
     covered_calibrators = get_covered_calibrators(calibrators, sensors_edges, covered_edges)
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
-    with open(f"{nodes_dir}/variables_{network_file.split('.')[-3].split('/')[-1]}.pkl", 'rb') as f:
+    with open(f"{nodes_dir}/variables_{node_filename}.pkl", 'rb') as f:
         variables = pickle.load(f)
     variables_values = {} # variable : [flow, speed]
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
@@ -204,8 +256,14 @@ if __name__ == '__main__':
     # TODO: criar ficheiro dos flows iniciais -> done
     flows_dir = config.get('dir', 'FLOWS', fallback='./sumo/flows')
     Path(flows_dir).mkdir(parents=True, exist_ok=True)
-    flows_file = f"{flows_dir}/flows_{network_file.split('.')[-3].split('/')[-1]}.xml"
+    flows_file = f"{flows_dir}/flows_{node_filename}.xml"
     generate_flows(flows_file, entry_nodes, routers, network)
+
+    # TODO: criar ficheiro das rotas -> done
+    routes_dir = config.get('dir', 'ROUTES', fallback='./sumo/routes')
+    Path(routes_dir).mkdir(parents=True, exist_ok=True)
+    routes_file = f"{routes_dir}/routes_{node_filename}.xml"
+    generate_routes(routes_file, routers, network)
 
     # TODO: ler intensidades do tráfego nas edges em questão
 
