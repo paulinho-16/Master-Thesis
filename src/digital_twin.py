@@ -7,10 +7,12 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 import os, sys, time
 import numpy as np
 import pandas as pd
+import json
 import traci
 import pickle
 import sumolib
 from pathlib import Path
+from datetime import datetime
 import xml.etree.cElementTree as ET
 
 from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, get_probability_distributions, write_xml
@@ -110,6 +112,19 @@ def get_sensors_data(node_name, sensors, data_file):
         sensors_dfs[sensor_id] = dataframe
 
     return df_timestamp, sensors_dfs
+
+def get_week_days(timestamp_hours):
+    days = set()
+    weekdays = []
+
+    for date_str in timestamp_hours:
+        date_obj = datetime.strptime(date_str[0], '%Y-%m-%d-%H-%M')
+        date_only_str = date_obj.strftime('%Y-%m-%d')
+        if date_only_str not in days:
+            days.add(date_only_str)
+            weekdays.append(date_obj.strftime('%A'))
+    
+    return weekdays
 
 def prepare_sumo(config, node_name):
     if 'SUMO_HOME' in os.environ:
@@ -232,6 +247,7 @@ if __name__ == '__main__':
     data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
     free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
     node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
+    intensities_file = config.get('nodes', 'INTENSITIES', fallback='./nodes/intensities.json')
     sensors_coverage = get_sensors_coverage(coverage_file)
     node_sensors = {}
     for sensor_id in get_node_sensors(node_sensors_file)[node_name]:
@@ -248,6 +264,7 @@ if __name__ == '__main__':
     variables_values = {} # variable : [flow, speed]
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
     timestamp_hours, sensors_data = get_sensors_data(node_name, sensors, data_file)
+    week_days = get_week_days(timestamp_hours)
     sumo_cmd = prepare_sumo(config, node_name)
     results_dir = config.get('dir', 'RESULTS', fallback='./sumo/results')
     Path(results_dir).mkdir(parents=True, exist_ok=True)
@@ -266,8 +283,10 @@ if __name__ == '__main__':
     generate_routes(routes_file, routers, network)
 
     # TODO: ler intensidades do tráfego nas edges em questão
+    with open(intensities_file, 'r') as int_file:
+        intensities = json.load(int_file)
 
-    current_hour = current_min = TTS = 0
+    current_day = current_hour = current_min = TTS = 0
     total_hours = int(config.get('params', 'HOURS', fallback='24'))
     time_clean = int(config.get('params', 'TIME_CLEAN', fallback='2400')) # seconds to wait and then remove old vehicles from the permanent distribution lists (routing control)
     time_sleep = int(config.get('params', 'TIME_SLEEP', fallback='0')) # slow down or speed up the simulation
@@ -356,9 +375,10 @@ if __name__ == '__main__':
                     for sensor_id in sensors_edges[edge_id]:
                         variables_values[variables[edge_id]['root_var']][0] += sensors[sensor_id][1][0] + sensors[sensor_id][1][2] # update the flow of the variable
 
-                # TODO: define the intensity levels of the free variables based on the current hour of the day
+                # TODO: define the intensity levels of the free variables based on the current hour of the day -> done
                 for var in free_variables[node_name][0]:
-                    free_variables_target[var] = 5 # TODO: read the target values of the free variables from the Here API and depending on the hour of the day
+                    week_day = week_days[current_day]
+                    free_variables_target[var] = intensities[node_name][week_day][var][current_hour % 24]
 
                 # TODO: apply the Simplex algorithm
                 while True:
@@ -473,7 +493,7 @@ if __name__ == '__main__':
 
                     # TODO: for each distribution, dinamically assign routes to the vehicles according to the probability distribution model -> done
                     for router in routers.keys():
-                        edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Pode ser a do router? Ou a anterior? Para já envio a anterior
+                        edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Pode ser a do router? Ou a anterior? Para já envio a do router
                         incoming_edges = network.getEdge(edgeStartPlusOne).getFromNode().getIncoming()
                         if len(incoming_edges) != 1:
                             raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
@@ -509,6 +529,7 @@ if __name__ == '__main__':
                 df.to_excel(f'{results_dir}/flow_{save_data_time}.xlsx', index=False)
                 controlFile = np.zeros((1, len(oldVehIDs) * 2 + 1))
                 current_hour += 1
+                current_day += current_hour // 24
 
             step += 1
 
