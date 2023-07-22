@@ -168,8 +168,9 @@ def get_flow_edges(entry_node, routers, network):
     
     return from_edge, to_edge
 
-def generate_calibrators(calibrators_file, entry_nodes):
+def generate_calibrators(calibrators_file, entry_nodes, routers, network):
     additional_tag = ET.Element('additional')
+    calib_routes = {} # calibrator_id : route_id
 
     for entry in entry_nodes:
         entry_node = network.getNode(entry)
@@ -177,10 +178,30 @@ def generate_calibrators(calibrators_file, entry_nodes):
         output_file_truck = f'{output_dir}/calibrator_truck_{entry}.xml'
         entry_edge = entry_node.getOutgoing()[0]
         calib_pos = entry_edge.getLength()
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
+
+        # define the route for the calibrator
+        router_edges = [routers[router][2] for router in routers]
+        paths = get_possible_paths(entry_edge.getID(), router_edges, network)
+        if len(paths) != 1:
+            raise Exception(f"Possible missing router on edge {entry_edge.getID()}.")
+        route = paths[0]
+        route_name = f'route_calib_{entry_edge.getID()}'
+        ET.SubElement(additional_tag, 'route', id=route_name, edges=route)
+
+        calib_car_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
+        calib_truck_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
+
+        for begin_time in range(0, 86400, 60):
+            end_time = begin_time + 60
+            ET.SubElement(calib_car_tag, 'flow', begin=str(begin_time), end=str(end_time), route=route_name, vehsPerHour='180', speed='27.78', type='vtype_car', departPos='random_free', departSpeed='max')
+            ET.SubElement(calib_truck_tag, 'flow', begin=str(begin_time), end=str(end_time), route=route_name, vehsPerHour='180', speed='27.78', type='vtype_truck', departPos='random_free', departSpeed='max')
+
+        calib_routes[f'calib_car_{entry}'] = route_name
+        calib_routes[f'calib_truck_{entry}'] = route_name
 
     write_xml(additional_tag, calibrators_file)
+
+    return calib_routes
 
 def generate_flows(flows_file, entry_nodes, routers, network):
     routes_tag = ET.Element('routes')
@@ -269,7 +290,7 @@ if __name__ == '__main__':
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     Path(calibrators_dir).mkdir(parents=True, exist_ok=True)
     calibrators_file = f'{calibrators_dir}/calib_{node_filename}.add.xml'
-    generate_calibrators(calibrators_file, entry_nodes)
+    calib_routes = generate_calibrators(calibrators_file, entry_nodes, routers, network)
 
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
     eq_variables = get_eq_variables(network_name, equations_file)
@@ -440,14 +461,13 @@ if __name__ == '__main__':
                         for sensor_id in covered_calibrators[calib_id]:
                             vehsPerHour += sensors[sensor_id][1][flow_idx]
                         speed = sum(v_calib) / x
-                        # TODO: definir rotas como route_cali_E_NS5...
-                        traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, vehsPerHour, speed, veh_type, 'route_cali_E_NS5', departLane='free', departSpeed='max')
+                        traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, vehsPerHour, speed, veh_type, calib_routes[calib_id], departLane='free', departSpeed='max')
                     else:
                         var_index = free_variables_order.index(variables[calibrators[calib_id]]['root_var'])
                         if '_car_' in calib_id:
-                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, closest_feasible_X_free_relative_error[var_index], 22.22, 'vtype_car', 'route_cali_N_ES152_onRamp1', departLane='free', departSpeed='max')
+                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, closest_feasible_X_free_relative_error[var_index], 22.22, 'vtype_car', calib_routes[calib_id], departLane='free', departSpeed='max')
                         elif '_truck_' in calib_id: # TODO: porquê que mete o fluxo a zero para trucks?
-                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', 'route_cali_N_ES152_onRamp1', departLane='free', departSpeed='max')
+                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', calib_routes[calib_id], departLane='free', departSpeed='max')
                 
                 current_min += 1
 
