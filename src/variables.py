@@ -17,14 +17,14 @@ from shapely.geometry import LineString
 
 from .utils import load_config, remove_chars, write_xml, get_sensors_coverage, get_entry_exit_nodes
 
-def get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count):
+def get_variable_name(edge_id, network_name, sensors_coverage, network_sensors, variable_count):
     variable = f'x{variable_count}'
     for sensor, values in sensors_coverage.items():
         if edge_id in values[1]:
             variable = f'q{variable_count}'
-            node_sensors[node_name].append(sensor)
+            network_sensors[network_name].append(sensor)
 
-    if node_name == 'Article': # TODO: APAGAR - é só para ficar com a mesma numeração que o artigo
+    if network_name == 'Article': # TODO: APAGAR - é só para ficar com a mesma numeração que o artigo
         replacement_mapping = {'q12': 'q1', 'q4': 'q2', 'q10': 'q3', 'q5': 'q4', 'q8': 'q5', 'q7': 'q6', 'x13': 'x1', 'x22': 'x2', 'x18': 'x3', 'x19': 'x4', 'x14': 'x5', 'x23': 'x6', 'x16': 'x7', 'x21': 'x8', 'x24': 'x10', 'x6': 'x11', 'x3': 'x12', 'x11': 'x13', 'x15': 'x14', 'x2': 'x15', 'x1': 'x16'}
         variable = replacement_mapping[variable] if variable in replacement_mapping.keys() else variable
     
@@ -55,7 +55,7 @@ def get_edge_variables(variables, edge_id):
             vars.update(lane_vars.values())
     return vars
 
-def process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers):
+def process(network_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, network_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers):
     while process_list:
         edge = process_list.popleft()
         connections = edge.getToNode().getConnections()
@@ -118,7 +118,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
 
                 if processable:
                     if conn_outgoing[0].getID() not in variables:
-                        variable = get_variable_name(conn_outgoing[0].getID(), node_name, sensors_coverage, node_sensors, variable_count)
+                        variable = get_variable_name(conn_outgoing[0].getID(), network_name, sensors_coverage, network_sensors, variable_count)
                         lane_variables = {}
                         variables[conn_outgoing[0].getID()] = {'root_var': variable}
                         for lane in conn_outgoing[0].getLanes():
@@ -161,7 +161,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
             # assign new variables to the following edges
             for f_edge in conn_outgoing:
                 if f_edge.getID() not in variables:
-                    variable = get_variable_name(f_edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
+                    variable = get_variable_name(f_edge.getID(), network_name, sensors_coverage, network_sensors, variable_count)
                     lane_variables = {}
                     variables[f_edge.getID()] = {'root_var': variable}
                     for lane in f_edge.getLanes():
@@ -215,7 +215,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
 
                     for to_edge in to_edges.keys():
                         var_lane = to_edges[to_edge][-1][0] # place the variable on the last lane
-                        variable = get_variable_name(from_edge, node_name, sensors_coverage, node_sensors, variable_count)
+                        variable = get_variable_name(from_edge, network_name, sensors_coverage, network_sensors, variable_count)
 
                         for lane, conn in to_edges[to_edge]:
                             if lane.getID() not in lane_variables:
@@ -276,7 +276,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
                     if to_edge in pending_merges:
                         pending_merges.remove(to_edge)
 
-                    variable = get_variable_name(to_edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
+                    variable = get_variable_name(to_edge.getID(), network_name, sensors_coverage, network_sensors, variable_count)
                     lane_variables = {}
                     variables[to_edge.getID()] = {'root_var': variable}
                     for lane in to_edge.getLanes():
@@ -340,7 +340,7 @@ def process(node_name, process_list, variables, equations, variable_count, route
     
     return variable_count, router_count, pending_merges
 
-def calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag):
+def calculate_intermediate_variables(network, network_file, network_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, network_sensors, additional_tag):
     equations = set()
     router_count = 1
     routers = {} # edge_id : router_id
@@ -348,7 +348,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
     future_processing = [] # edges that are not ready to be processed in the first iteration of the algorithm
     divided_edges = set()
     
-    variable_count, router_count, pending_merges = process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
+    variable_count, router_count, pending_merges = process(network_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, network_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
 
     pending_edges = []
     for edge in network.getEdges():
@@ -369,7 +369,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
         
         for edge in merging_edges:
             if edge in pending_edges and edge.getID() not in variables:
-                variable = get_variable_name(edge.getID(), node_name, sensors_coverage, node_sensors, variable_count)
+                variable = get_variable_name(edge.getID(), network_name, sensors_coverage, network_sensors, variable_count)
                 lane_variables = {}
                 variables[edge.getID()] = {'root_var': variable}
                 for lane in edge.getLanes():
@@ -384,11 +384,11 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
                 process_list.append(edge)
                 break
         
-        variable_count, router_count, pending_merges = process(node_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
+        variable_count, router_count, pending_merges = process(network_name, process_list, variables, equations, variable_count, router_count, sensors_coverage, network_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
 
     # process the pending edges in future_processing
     future_processing = collections.deque(future_processing)
-    variable_count, router_count, pending_merges = process(node_name, future_processing, variables, equations, variable_count, router_count, sensors_coverage, node_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
+    variable_count, router_count, pending_merges = process(network_name, future_processing, variables, equations, variable_count, router_count, sensors_coverage, network_sensors, pending_merges, future_processing, additional_tag, divided_edges, routers)
 
     pending_edges = []
     for edge in network.getEdges():
@@ -408,7 +408,7 @@ def calculate_intermediate_variables(network, network_file, node_name, nodes_dir
 
     return variable_count, router_count, sorted(equations)
 
-def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file):
+def gen_variables(network, network_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, network_sensors, network_file):
     additional_tag = ET.Element('additional')
     variable_count = 1
     variables = {} # edge_id : {root_var: variable, lane_id : variable, ...}
@@ -424,7 +424,7 @@ def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensor
         edge_id = entry_edge.getID()
         edge = network.getEdge(edge_id)
 
-        variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
+        variable = get_variable_name(edge_id, network_name, sensors_coverage, network_sensors, variable_count)
         lane_variables = {}
         variables[edge_id] = {'root_var': variable}
         for lane in edge.getLanes():
@@ -445,7 +445,7 @@ def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensor
         edge_id = exit_edge.getID()
         edge = network.getEdge(edge_id)
 
-        variable = get_variable_name(edge_id, node_name, sensors_coverage, node_sensors, variable_count)
+        variable = get_variable_name(edge_id, network_name, sensors_coverage, network_sensors, variable_count)
         lane_variables = {}
         variables[edge_id] = {'root_var': variable}
         for lane in edge.getLanes():
@@ -469,7 +469,7 @@ def gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensor
         variable_count += 1
 
     process_list = collections.deque(process_list)
-    variable_count, router_count, equations = calculate_intermediate_variables(network, network_file, node_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, node_sensors, additional_tag)
+    variable_count, router_count, equations = calculate_intermediate_variables(network, network_file, network_name, nodes_dir, process_list, variable_count, variables, sensors_coverage, network_sensors, additional_tag)
 
     write_xml(additional_tag, network_file.replace('.net', '_poi'))
 
@@ -598,22 +598,22 @@ def reduce_equations(equations):
 
     return new_equations
 
-def process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, node_sensors):
+def process_network(network_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, network_sensors):
     network = sumolib.net.readNet(network_file)
-    entry_nodes_ids, exit_nodes_ids = get_entry_exit_nodes(entries_exits_file, node_name)
+    entry_nodes_ids, exit_nodes_ids = get_entry_exit_nodes(entries_exits_file, network_name)
     entry_nodes, exit_nodes = [network.getNode(node_id) for node_id in entry_nodes_ids], [network.getNode(node_id) for node_id in exit_nodes_ids]
 
-    variable_count, router_count, equations = gen_variables(network, node_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, node_sensors, network_file)
+    variable_count, router_count, equations = gen_variables(network, network_name, nodes_dir, entry_nodes, exit_nodes, sensors_coverage, network_sensors, network_file)
 
-    nsf.write(f'### Sensors of {node_name}:\n')
-    for sensor in node_sensors[node_name]:
+    nsf.write(f'### Sensors of {network_name}:\n')
+    for sensor in network_sensors[network_name]:
         nsf.write(f'{sensor}\n')
     nsf.write('\n')
 
     equations = reduce_equations(equations)
 
     last_equation = len(equations) - 1
-    ef.write(f'### Equations of {node_name} - {len(equations)}:\n')
+    ef.write(f'### Equations of {network_name} - {len(equations)}:\n')
     for i, eq in enumerate(equations):
         eq = re.sub(r'x(\d+)', r'x_{\1}', eq)
         eq = re.sub(r'q(\d+)', r'q_{\1}', eq)
@@ -629,19 +629,19 @@ def process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef
 
 if __name__ == '__main__':
     config = load_config()
-    node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
+    network_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/network_sensors.md')
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
     equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
     nodes_dir = config.get('dir', 'NODES', fallback='./nodes')
 
-    node_sensors = {}
+    network_sensors = {}
     sensors_coverage = get_sensors_coverage(coverage_file)
 
-    with open(node_sensors_file, 'w') as nsf, open(equations_file, 'w') as ef:
+    with open(network_sensors_file, 'w') as nsf, open(equations_file, 'w') as ef:
         for var, value in list(config.items('nodes')):
             if var.startswith('node_'):
-                node_name, network_file = value.split(',')
-                node_sensors[node_name] = []
-                print(f"::: Processing node {node_name} :::\n")
-                process_node(node_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, node_sensors)
+                network_name, network_file = value.split(',')
+                network_sensors[network_name] = []
+                print(f"::: Processing network {network_name} :::\n")
+                process_network(network_name, network_file, nodes_dir, entries_exits_file, nsf, ef, sensors_coverage, network_sensors)

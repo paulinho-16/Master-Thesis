@@ -15,14 +15,14 @@ from pathlib import Path
 from datetime import datetime
 import xml.etree.cElementTree as ET
 
-from .utils import load_config, get_eq_variables, get_node_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, get_probability_distributions, write_xml
+from .utils import load_config, get_eq_variables, get_network_sensors, get_sensors_coverage, get_free_variables, get_entry_exit_nodes, get_calibrators, get_probability_distributions, write_xml
 import src.logic_functions as fn
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
 # - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
 # - for each entry and exit, set an empty array -> done
-def initialize_variables(node_name, network_file, node_sensors, entries_exits_file):
+def initialize_variables(network_name, network_file, node_sensors, entries_exits_file):
     # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))
     root = tree.getroot()
@@ -40,7 +40,7 @@ def initialize_variables(node_name, network_file, node_sensors, entries_exits_fi
 
     # store the IDs of the vehicles that entered and exited the network
     oldVehIDs = {} # node_id : [vehIDs]
-    entry_nodes, exit_nodes = get_entry_exit_nodes(entries_exits_file, node_name)
+    entry_nodes, exit_nodes = get_entry_exit_nodes(entries_exits_file, network_name)
     for node in entry_nodes + exit_nodes:
         oldVehIDs[node] = []
 
@@ -102,12 +102,12 @@ def get_covered_calibrators(calibrators, sensors_edges, covered_edges):
     
     return covered_calibrators
 
-def get_sensors_data(node_name, sensors, data_file):
+def get_sensors_data(network_name, sensors, data_file):
     sensors_dfs = {} # id : dataframe
     df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
     
     for sensor_id in sensors.keys():
-        sheet_name = sensor_id.replace('CH', 'X').replace(':', '_').replace('.', '_') if node_name == 'Article' else sensor_id
+        sheet_name = sensor_id.replace('CH', 'X').replace(':', '_').replace('.', '_') if network_name == 'Article' else sensor_id
         dataframe = pd.read_excel(data_file, sheet_name=sheet_name).values.tolist()
         sensors_dfs[sensor_id] = dataframe
 
@@ -126,7 +126,7 @@ def get_week_days(timestamp_hours):
     
     return weekdays
 
-def prepare_sumo(config, node_name):
+def prepare_sumo(config, network_name):
     if 'SUMO_HOME' in os.environ:
         tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
         sys.path.append(tools)
@@ -134,7 +134,7 @@ def prepare_sumo(config, node_name):
         sys.exit("Please declare environment variable 'SUMO_HOME'")
 
     sumo_binary = config.get('sumo', 'BINARY', fallback='sumo-gui.exe')
-    sumo_config = config.get('sumo', 'CONFIG_ARTICLE', fallback='./sumo/article.sumocfg') if node_name == 'Article' else config.get('sumo', 'CONFIG', fallback='./sumo/vci.sumocfg')
+    sumo_config = config.get('sumo', 'CONFIG_ARTICLE', fallback='./sumo/article.sumocfg') if network_name == 'Article' else config.get('sumo', 'CONFIG', fallback='./sumo/vci.sumocfg')
 
     return [sumo_binary, '-c', sumo_config, '--seed', str(28815), '--start', '1', '--quit-on-end', '1']
 
@@ -167,6 +167,20 @@ def get_flow_edges(entry_node, routers, network):
         to_edge = next_edge
     
     return from_edge, to_edge
+
+def generate_calibrators(calibrators_file, entry_nodes):
+    additional_tag = ET.Element('additional')
+
+    for entry in entry_nodes:
+        entry_node = network.getNode(entry)
+        output_file_car = f'{output_dir}/calibrator_car_{entry}.xml'
+        output_file_truck = f'{output_dir}/calibrator_truck_{entry}.xml'
+        entry_edge = entry_node.getOutgoing()[0]
+        calib_pos = entry_edge.getLength()
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
+
+    write_xml(additional_tag, calibrators_file)
 
 def generate_flows(flows_file, entry_nodes, routers, network):
     routes_tag = ET.Element('routes')
@@ -234,27 +248,37 @@ def get_possible_paths(edge_id, router_edges, network):
 
 if __name__ == '__main__':
     config = load_config()
-    node_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    network_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
     node_filename = network_file.split('.')[-3].split('/')[-1]
     network = sumolib.net.readNet(network_file)
-    equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
-    eq_variables = get_eq_variables(node_name, equations_file)
-    coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
-    calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
-    additionals_file = f"{calibrators_dir}/calib_{node_filename}.add.xml"
-    calibrators = get_calibrators(additionals_file)
+
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
-    data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if node_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
-    free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
-    node_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/node_sensors.md')
-    intensities_file = config.get('nodes', 'INTENSITIES', fallback='./nodes/intensities.json')
+    network_sensors_file = config.get('nodes', 'SENSORS', fallback='./nodes/network_sensors.md')
+    coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
+
     sensors_coverage = get_sensors_coverage(coverage_file)
     node_sensors = {}
-    for sensor_id in get_node_sensors(node_sensors_file)[node_name]:
+    for sensor_id in get_network_sensors(network_sensors_file)[network_name]:
         node_sensors[sensor_id] = sensors_coverage[sensor_id][0]
+
+    entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs = initialize_variables(network_name, network_file, node_sensors, entries_exits_file)
+
+    # TODO: criar ficheiro dos calibrators -> done
+    output_dir = config.get('dir', 'OUTPUT', fallback='./output')
+    calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    Path(calibrators_dir).mkdir(parents=True, exist_ok=True)
+    calibrators_file = f'{calibrators_dir}/calib_{node_filename}.add.xml'
+    generate_calibrators(calibrators_file, entry_nodes)
+
+    equations_file = config.get('nodes', 'EQUATIONS', fallback='./nodes/equations.md')
+    eq_variables = get_eq_variables(network_name, equations_file)
+    calibrators = get_calibrators(calibrators_file)
+    data_file = config.get('sensors', 'DATA_ARTICLE', fallback='./data/article_data.xlsx') if network_name == 'Article' else config.get('sensors', 'DATA', fallback='./data/sensor_data.xlsx')
+    free_variables_file = config.get('nodes', 'FREE_VARIABLES', fallback='./nodes/free_variables.md')
+    intensities_file = config.get('nodes', 'INTENSITIES', fallback='./nodes/intensities.json')
     free_variables = get_free_variables(free_variables_file)
-    free_variables_target = {var: 5 for var in free_variables[node_name][0]} # TODO: read the target values of the free variables from the Here API
-    entry_nodes, exit_nodes, routers, perm_dists, sensors, oldVehIDs = initialize_variables(node_name, network_file, node_sensors, entries_exits_file)
+    free_variables_target = {var: 5 for var in free_variables[network_name][0]} # TODO: read the target values of the free variables from the Here API
     sensors_edges = get_sensors_edges(network, sensors)
     covered_edges = [edges[1] for sensor, edges in sensors_coverage.items() if sensor in node_sensors.keys()]
     covered_calibrators = get_covered_calibrators(calibrators, sensors_edges, covered_edges)
@@ -263,9 +287,9 @@ if __name__ == '__main__':
         variables = pickle.load(f)
     variables_values = {} # variable : [flow, speed]
     entry_exit_variables = get_entry_exit_variables(entry_nodes, exit_nodes, variables)
-    timestamp_hours, sensors_data = get_sensors_data(node_name, sensors, data_file)
+    timestamp_hours, sensors_data = get_sensors_data(network_name, sensors, data_file)
     week_days = get_week_days(timestamp_hours)
-    sumo_cmd = prepare_sumo(config, node_name)
+    sumo_cmd = prepare_sumo(config, network_name)
     results_dir = config.get('dir', 'RESULTS', fallback='./sumo/results')
     Path(results_dir).mkdir(parents=True, exist_ok=True)
     vehIDs_all = []
@@ -317,8 +341,7 @@ if __name__ == '__main__':
                 for node in entry_nodes:
                     start_edge = network.getNode(node).getOutgoing()[0]
                     next_edge = start_edge.getToNode().getOutgoing()[0]
-                    flow, speed, oldVehIDs[node], newVehIDs = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
-                    new_veh_ids[node] = newVehIDs
+                    flow, speed, oldVehIDs[node], new_veh_ids[node] = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
                 # TODO: update the flow out variables for each exit on the network -> done
@@ -376,16 +399,16 @@ if __name__ == '__main__':
                         variables_values[variables[edge_id]['root_var']][0] += sensors[sensor_id][1][0] + sensors[sensor_id][1][2] # update the flow of the variable
 
                 # TODO: define the intensity levels of the free variables based on the current hour of the day -> done
-                for var in free_variables[node_name][0]:
+                for var in free_variables[network_name][0]:
                     week_day = week_days[current_day]
-                    free_variables_target[var] = intensities[node_name][week_day][var][current_hour % 24]
+                    free_variables_target[var] = intensities[network_name][week_day][var][current_hour % 24]
 
                 # TODO: apply the Simplex algorithm
                 while True:
                     # TODO: calculate the closest feasible error, that gives the values for the free variables -> done
-                    Xnull = free_variables[node_name][4]
+                    Xnull = free_variables[network_name][4]
                     free_variables_order = sorted(list(free_variables_target.keys()), key=lambda x: int(x[1:]))
-                    closest_feasible_X_free_relative_error, targets, Xparticular = fn.restrictedFreeVarRange(variables_values, free_variables_order, free_variables_target, free_variables[node_name][1], free_variables[node_name][2], free_variables[node_name][3], Xnull, num_simplex_runs)
+                    closest_feasible_X_free_relative_error, targets, Xparticular = fn.restrictedFreeVarRange(variables_values, free_variables_order, free_variables_target, free_variables[network_name][1], free_variables[network_name][2], free_variables[network_name][3], Xnull, num_simplex_runs)
 
                     # TODO: calculate the solution for the entire equation system (Xcomplete), by defining the matrices Xparticular and Xnull -> done
                     Xnull_cols = []

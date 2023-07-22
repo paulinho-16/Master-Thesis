@@ -72,8 +72,6 @@ def gen_entry_exit_nodes(node_name, nodes, eef):
     eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
     eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
 
-    return entry_nodes
-
 def gen_coverage(df, network, network_article):
     radius = 50
     coverage_file = config.get('sensors', 'COVERAGE', fallback='./sumo/coverage.md')
@@ -115,25 +113,6 @@ def gen_coverage(df, network, network_article):
                 following_edges = list(following_edges[0].getOutgoing().keys())
 
         f.write(coverage.strip())
-
-def gen_calibrators(node_name, entry_nodes):
-    additional_tag = ET.Element('additional')
-
-    output_dir = config.get('dir', 'OUTPUT', fallback='./output')
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-    for entry in entry_nodes:
-        output_file_car = f'{output_dir}/calibrator_car_{entry.getID()}.xml'
-        output_file_truck = f'{output_dir}/calibrator_truck_{entry.getID()}.xml'
-        entry_edge = entry.getOutgoing()[0]
-        calib_pos = entry_edge.getLength()
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry.getID()}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry.getID()}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
-
-    calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
-    Path(calibrators_dir).mkdir(parents=True, exist_ok=True)
-
-    write_xml(additional_tag, f'{calibrators_dir}/calib_{node_name}.add.xml')
 
 def prepare_view():
     view_file = config.get('sumo', 'VIEW', fallback='./sumo/vci.view.xml')
@@ -231,8 +210,7 @@ if __name__ == '__main__':
             if var.startswith('node_'):
                 node_name, network_file = value.split(',')
                 node_network = sumolib.net.readNet(network_file)
-                entry_nodes = gen_entry_exit_nodes(node_name, node_network.getNodes(), eef)
-                gen_calibrators(network_file.split('.')[-3].split('/')[-1], entry_nodes)
+                gen_entry_exit_nodes(node_name, node_network.getNodes(), eef)
     
     prepare_view()
     prepare_data()
