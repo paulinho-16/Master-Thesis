@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
-	<calibrator id="calib_car_2486710615" vTypes="vtype_car" edge="-13798697" pos="0" jamThreshold="0.5" output="./output/calibrator_car_2486710615.xml" />
-	<calibrator id="calib_truck_2486710615" vTypes="vtype_truck" edge="-13798697" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_2486710615.xml" />
-	<calibrator id="calib_car_128560421" vTypes="vtype_car" edge="1017628559" pos="0" jamThreshold="0.5" output="./output/calibrator_car_128560421.xml" />
-	<calibrator id="calib_truck_128560421" vTypes="vtype_truck" edge="1017628559" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_128560421.xml" />
-	<calibrator id="calib_car_1110673412" vTypes="vtype_car" edge="37113029" pos="0" jamThreshold="0.5" output="./output/calibrator_car_1110673412.xml" />
-	<calibrator id="calib_truck_1110673412" vTypes="vtype_truck" edge="37113029" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_1110673412.xml" />
-	<calibrator id="calib_car_128579264" vTypes="vtype_car" edge="479365566" pos="0" jamThreshold="0.5" output="./output/calibrator_car_128579264.xml" />
-	<calibrator id="calib_truck_128579264" vTypes="vtype_truck" edge="479365566" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_128579264.xml" />
+	<calibrator id="calib_car_2486710615" vTypes="vtype_car" edge="-13798697" pos="148.01" jamThreshold="0.5" output="./output/calibrator_car_2486710615.xml" />
+	<calibrator id="calib_truck_2486710615" vTypes="vtype_truck" edge="-13798697" pos="148.01" jamThreshold="0.5" output="./output/calibrator_truck_2486710615.xml" />
+	<calibrator id="calib_car_128560421" vTypes="vtype_car" edge="1017628559" pos="152.4" jamThreshold="0.5" output="./output/calibrator_car_128560421.xml" />
+	<calibrator id="calib_truck_128560421" vTypes="vtype_truck" edge="1017628559" pos="152.4" jamThreshold="0.5" output="./output/calibrator_truck_128560421.xml" />
+	<calibrator id="calib_car_1110673412" vTypes="vtype_car" edge="37113029" pos="55.0" jamThreshold="0.5" output="./output/calibrator_car_1110673412.xml" />
+	<calibrator id="calib_truck_1110673412" vTypes="vtype_truck" edge="37113029" pos="55.0" jamThreshold="0.5" output="./output/calibrator_truck_1110673412.xml" />
+	<calibrator id="calib_car_128579264" vTypes="vtype_car" edge="479365566" pos="180.44" jamThreshold="0.5" output="./output/calibrator_car_128579264.xml" />
+	<calibrator id="calib_truck_128579264" vTypes="vtype_truck" edge="479365566" pos="180.44" jamThreshold="0.5" output="./output/calibrator_truck_128579264.xml" />
 </additional>

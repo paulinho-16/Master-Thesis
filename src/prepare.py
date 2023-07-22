@@ -125,8 +125,10 @@ def gen_calibrators(node_name, entry_nodes):
     for entry in entry_nodes:
         output_file_car = f'{output_dir}/calibrator_car_{entry.getID()}.xml'
         output_file_truck = f'{output_dir}/calibrator_truck_{entry.getID()}.xml'
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry.getID()}', vTypes='vtype_car', edge=entry.getOutgoing()[0].getID(), pos='0', jamThreshold='0.5', output=output_file_car)
-        ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry.getID()}', vTypes='vtype_truck', edge=entry.getOutgoing()[0].getID(), pos='0', jamThreshold='0.5', output=output_file_truck)
+        entry_edge = entry.getOutgoing()[0]
+        calib_pos = entry_edge.getLength()
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry.getID()}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
+        ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry.getID()}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
 
     calibrators_dir = config.get('dir', 'CALIBRATORS', fallback='./sumo/calibrators')
     Path(calibrators_dir).mkdir(parents=True, exist_ok=True)
