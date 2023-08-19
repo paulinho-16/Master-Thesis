@@ -2,11 +2,16 @@
 474423858-AddedOffRampEdge
 474423858
 
-### Edges covered by sensor CAV401-2/CAV401-1 (703196298):
+### Edges covered by sensor CAV401-2/CAV401-1_C (703196298):
 703196298
 474423823
 118005645#1
 118005645#1-AddedOnRampEdge
+
+### Edges covered by sensor CAV401-2/CAV401-1_D (597084092):
+597084092
+597084091
+597084090
 
 ### Edges covered by sensor AEDL - A20 15+850 CT3709 (35047582):
 35047582
@@ -83,12 +88,24 @@
 ### Edges covered by sensor AEDL - A20 0+650 CT3683 (139462593):
 139462593
 
-### Edges covered by sensor AEDL - A1 297+975 CT3687 (95367752#1):
+### Edges covered by sensor AEDL - A1 297+975 CT3687_C (415566508#1-AddedOnRampEdge):
+415566508#1-AddedOnRampEdge
+415566508#1
+839842702
+839842702-AddedOffRampEdge
+
+### Edges covered by sensor AEDL - A1 297+975 CT3687_D (95367752#1-AddedOffRampEdge):
+95367752#1-AddedOffRampEdge
 95367752#1
 95367752#1-AddedOnRampEdge
-95367752#1-AddedOffRampEdge
 
-### Edges covered by sensor AEDL - A1 300+250 CT3688 (461173094):
+### Edges covered by sensor AEDL - A1 300+250 CT3688_C (405899851):
+405899851
+597084093
+460986053
+460986053-AddedOffRampEdge
+
+### Edges covered by sensor AEDL - A1 300+250 CT3688_D (461173094):
 461173094
 461173094-AddedOffRampEdge
 

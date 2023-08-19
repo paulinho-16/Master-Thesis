@@ -20,13 +20,13 @@ import src.logic_functions as fn
 
 # TODO: Initialization of the variables
 # - for each permanent distribution, set an array with an array with two empty arrays and an array with a 0 element -> done
-# - for each detector, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
+# - for each sensor, set two zeroed arrays of size 4 (carFlows, carSpeed, truckFlows, truckSpeed), for the new and old values -> done
 # - for each entry and exit, set an empty array -> done
 def initialize_variables(network_name, network_file, node_sensors, entries_exits_file):
-    # initialize the variables for each router (permanent distribution)
     tree = ET.parse(network_file.replace('.net', '_poi'))
     root = tree.getroot()
 
+    # initialize the variables for each router (permanent distribution)
     routers, perm_dists = {}, {}
     router_pois = [poi for poi in root.findall('poi') if poi.get('type') == 'router']
     for poi in router_pois:
@@ -152,6 +152,7 @@ def get_flow_edges(entry_node, routers, network):
     from_edge = entry_node.getOutgoing()[0].getID()
     next_edge = from_edge
     router_found = False
+    router_edges = [routers[router][2] for router in routers]
     while not router_found:
         to_node = network.getEdge(next_edge).getToNode()
         if len(to_node.getOutgoing()) == 0: # no routers in the possible paths from the entry edge
@@ -160,13 +161,25 @@ def get_flow_edges(entry_node, routers, network):
             raise Exception(f"Possible missing router on edge {next_edge}.")
 
         next_edge = to_node.getOutgoing()[0].getID()
-        for router in routers:
-            if routers[router][2] == next_edge:
-                router_found = True
-                break
+        if next_edge in router_edges:
+            router_found = True
         to_edge = next_edge
     
     return from_edge, to_edge
+
+def get_counting_edge(initial_edge):
+    following_edges = list(initial_edge.getOutgoing().keys())
+
+    while len(following_edges) == 1:
+        incoming_edges = list(following_edges[0].getIncoming().keys())
+        if len(incoming_edges) > 1:
+            break
+
+        start_edge = incoming_edges[0]
+        next_edge = following_edges[0]
+        following_edges = list(following_edges[0].getOutgoing().keys())
+
+    return start_edge, next_edge
 
 def generate_calibrators(calibrators_file, entry_nodes, routers, network):
     additional_tag = ET.Element('additional')
@@ -214,7 +227,7 @@ def generate_flows(flows_file, entry_nodes, routers, network):
         ET.SubElement(routes_tag, 'flow', id=f'flow_car_{entry_node.getID()}', type='vtype_car', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.20')
         ET.SubElement(routes_tag, 'flow', id=f'flow_truck_{entry_node.getID()}', type='vtype_truck', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.10')
 
-    write_xml(routes_tag, flows_file)   
+    write_xml(routes_tag, flows_file) 
 
 def generate_routes(routes_file, routers, network):
     routes_tag = ET.Element('routes')
@@ -318,13 +331,13 @@ if __name__ == '__main__':
     # TODO: criar ficheiro dos flows iniciais -> done
     flows_dir = config.get('dir', 'FLOWS', fallback='./sumo/flows')
     Path(flows_dir).mkdir(parents=True, exist_ok=True)
-    flows_file = f"{flows_dir}/flows_{node_filename}.xml"
+    flows_file = f'{flows_dir}/flows_{node_filename}.xml'
     generate_flows(flows_file, entry_nodes, routers, network)
 
     # TODO: criar ficheiro das rotas -> done
     routes_dir = config.get('dir', 'ROUTES', fallback='./sumo/routes')
     Path(routes_dir).mkdir(parents=True, exist_ok=True)
-    routes_file = f"{routes_dir}/routes_{node_filename}.xml"
+    routes_file = f'{routes_dir}/routes_{node_filename}.xml'
     generate_routes(routes_file, routers, network)
 
     # TODO: ler intensidades do tráfego nas edges em questão
@@ -360,8 +373,7 @@ if __name__ == '__main__':
                 new_veh_ids = {} # node : [vehIDs]
 
                 for node in entry_nodes:
-                    start_edge = network.getNode(node).getOutgoing()[0]
-                    next_edge = start_edge.getToNode().getOutgoing()[0]
+                    start_edge, next_edge = get_counting_edge(network.getNode(node).getOutgoing()[0])
                     flow, speed, oldVehIDs[node], new_veh_ids[node] = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
@@ -392,7 +404,9 @@ if __name__ == '__main__':
                     for edge_id in sorted(sensors_edges.keys()): # save the flow values of the sensor edges
                         node = get_node(network, flow_speed_min, edge_id)
                         controlFile_list.extend([variables_values[variables[edge_id]['root_var']][0], flow_speed_min[node][1] * 60])
+                    
                     controlFile_list.append(round(TTS)) # TODO: understand what TTS means and how it is updated
+
                     for edge_id in sorted(entry_exit_variables.keys()): # save the flow values of the remaining entry and exit edges
                         if not any(edge_id in lst[1] for lst in sensors_coverage.values()):
                             node = get_node(network, flow_speed_min, edge_id)
@@ -536,11 +550,10 @@ if __name__ == '__main__':
 
                     # TODO: for each distribution, dinamically assign routes to the vehicles according to the probability distribution model -> done
                     for router in routers.keys():
-                        edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Pode ser a do router? Ou a anterior? Para já envio a do router
+                        edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Para já envio a edge do router
                         incoming_edges = network.getEdge(edgeStartPlusOne).getFromNode().getIncoming()
                         if len(incoming_edges) != 1:
                             raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
-                        edgeStart = incoming_edges[0].getID()
                         temp_dists[router], perm_dists[router] = fn.routingDinamically(edgeStartPlusOne, temp_dists[router], perm_dists[router], edgeStartPlusOne, time_clean, sim_time, vehIDs_all)
 
                     vehIDs_all = []

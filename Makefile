@@ -38,6 +38,9 @@ solve:
 run:
 	@python -m src.digital_twin
 
+results:
+	@python -m src.results
+
 clean:
 	@PowerShell -Command "Write-Output 'Removing files...'"
 	# del $(CALIBRATORS_FILE)

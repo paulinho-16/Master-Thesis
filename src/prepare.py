@@ -47,7 +47,7 @@ def get_closest_lane(network, x, y, radius):
     else:
         raise Exception()
     
-def gen_entry_exit_nodes(node_name, nodes, eef):
+def gen_entry_exit_nodes(network_name, nodes, eef):
     entry_nodes = []
     exit_nodes = []
 
@@ -63,12 +63,12 @@ def gen_entry_exit_nodes(node_name, nodes, eef):
             entry_nodes.append(node)
             exit_nodes.append(node)
     
-    print(f"\nFound {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes for the network node {node_name}.")
+    print(f"\nFound {len(entry_nodes)} entry nodes and {len(exit_nodes)} exit nodes for the network node {network_name}.")
     print(f"Entry nodes: {[entry.getID() for entry in entry_nodes]}")
     print(f"Exit nodes: {[exit.getID() for exit in exit_nodes]}")
 
     # register the entry and exit nodes in the `entries_exits.md` file
-    eef.write(f'### Entry and exit nodes of {node_name}:\n')
+    eef.write(f'### Entry and exit nodes of {network_name}:\n')
     eef.write(f'Entry nodes: {[entry.getID() for entry in entry_nodes]}\n')
     eef.write(f'Exit nodes: {[exit.getID() for exit in exit_nodes]}\n\n')
 
@@ -140,7 +140,11 @@ def prepare_data():
         if file.is_dir():
             sensor = file.name
             worksheet_name = sensor if len(sensor) <= 31 else sensor[:31] # max sheet name length is 31
-            sensor_sheet = workbook.add_worksheet(worksheet_name)
+            if sensor == 'CAV401-2;CAV401-1' or sensor == 'AEDL - A1 297+975 CT3687' or sensor == 'AEDL - A1 300+250 CT3688':
+                sensor_sheet_c = workbook.add_worksheet(f'{worksheet_name}_C')
+                sensor_sheet_d = workbook.add_worksheet(f'{worksheet_name}_D')
+            else:
+                sensor_sheet = workbook.add_worksheet(worksheet_name)
 
             print(f"Processing data from the sensor {sensor}...")
 
@@ -156,13 +160,47 @@ def prepare_data():
 
                             df['Timestamp'] = pd.to_datetime(df['Timestamp'])
                             timestamp_days = np.append(timestamp_days, df['Timestamp'].dt.strftime('%Y-%m-%d').unique())
-                            
+
                             df['vehicle_type'] = df['classe_ep'].map({'A': 'car', 'B': 'car', 'C': 'truck', 'D': 'truck'}) if 'classe_ep' in df.columns else df['VehicleTypeId'].map({3: 'car', 4: 'car', 5: 'truck', 6: 'truck'}) # TODO: verify if the car and truck classes are correctly mapped
                             df.set_index('Timestamp', inplace=True)
-                            grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
 
                             count_id_col = 'trans_id' if 'trans_id' in df.columns else 'MedidasCCVDetailId'
                             speed_col = 'speed' if 'speed' in df.columns else 'Velocidade'
+
+                            if sensor == 'CAV401-2;CAV401-1' or sensor == 'AEDL - A1 297+975 CT3687' or sensor == 'AEDL - A1 300+250 CT3688':
+                                # Separate the data into two dataframes based on direction
+                                if sensor == 'CAV401-2;CAV401-1':
+                                    df_direction_c = df[(df['SensorCCVId'] == 76) | (df['SensorCCVId'] == 77) | (df['SensorCCVId'] == 78)]
+                                    df_direction_d = df[(df['SensorCCVId'] == 73) | (df['SensorCCVId'] == 74) | (df['SensorCCVId'] == 75)]
+                                if sensor == 'AEDL - A1 297+975 CT3687' or sensor == 'AEDL - A1 300+250 CT3688':
+                                    df_direction_c = df[df['lane_direction'] == 'C']
+                                    df_direction_d = df[df['lane_direction'] == 'D']
+
+                                # Group and calculate for direction C
+                                grouped_c = df_direction_c.groupby(['vehicle_type', pd.Grouper(freq='1T')])
+
+                                result_sheet_c = pd.DataFrame({
+                                    'carFlows': grouped_c[count_id_col].count()['car'],
+                                    'carSpeeds': grouped_c[speed_col].mean()['car'],
+                                    'truckFlows': grouped_c[count_id_col].count()['truck'],
+                                    'truckSpeeds': grouped_c[speed_col].mean()['truck']
+                                })
+
+                                # Group and calculate for direction D
+                                grouped_d = df_direction_d.groupby(['vehicle_type', pd.Grouper(freq='1T')])
+
+                                result_sheet_d = pd.DataFrame({
+                                    'carFlows': grouped_d[count_id_col].count()['car'],
+                                    'carSpeeds': grouped_d[speed_col].mean()['car'],
+                                    'truckFlows': grouped_d[count_id_col].count()['truck'],
+                                    'truckSpeeds': grouped_d[speed_col].mean()['truck']
+                                })
+
+                                # Combine the results into separate dataframes
+                                result_c = result_sheet_c.fillna(0)
+                                result_d = result_sheet_d.fillna(0)
+
+                            grouped = df.groupby(['vehicle_type', pd.Grouper(freq='1T')])
 
                             result_sheet = pd.DataFrame({
                                 'carFlows': grouped[count_id_col].count()['car'],
@@ -179,10 +217,19 @@ def prepare_data():
                 print(f"Inconsistent timestamps in folder {sensor}!")
 
             # create the sensor worksheet
-            sensor_sheet.set_column('A:D', 15)
-            for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
-                sensor_sheet.write(title_cell, title_name, header_format)
-                sensor_sheet.write_column(value_cell, result[title_name], base_format)
+            if sensor == 'CAV401-2;CAV401-1' or sensor == 'AEDL - A1 297+975 CT3687' or sensor == 'AEDL - A1 300+250 CT3688':
+                sensor_sheet_c.set_column('A:D', 15)
+                sensor_sheet_d.set_column('A:D', 15)
+                for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
+                    sensor_sheet_c.write(title_cell, title_name, header_format)
+                    sensor_sheet_d.write(title_cell, title_name, header_format)
+                    sensor_sheet_c.write_column(value_cell, result_c[title_name], base_format)
+                    sensor_sheet_d.write_column(value_cell, result_d[title_name], base_format)
+            else:
+                sensor_sheet.set_column('A:D', 15)
+                for title_cell, title_name, value_cell in [('A1', 'carFlows', 'A2'), ('B1', 'carSpeeds', 'B2'), ('C1', 'truckFlows', 'C2'), ('D1', 'truckSpeeds', 'D2')]:
+                    sensor_sheet.write(title_cell, title_name, header_format)
+                    sensor_sheet.write_column(value_cell, result[title_name], base_format)
 
     # create the timestamp worksheet
     timestamp_sheet.set_column('A:A', 15)
