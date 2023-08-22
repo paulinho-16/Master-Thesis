@@ -63,8 +63,8 @@ Entry nodes: ['J0', '461172813-AddedOffRampNode', '461173094-AddedOffRampNode', 
 Exit nodes: ['1838975437', 'J1', '1146570357', '95367763#1-AddedOnRampNode']
 
 ### Entry and exit nodes of Nó de Coimbroes:
-Entry nodes: ['1146570357', '1147305927', '4449523991', '95367752#1-AddedOffRampNode']
-Exit nodes: ['415566508#1-AddedOnRampNode', '461173094-AddedOffRampNode', '269354449', '5686150764']
+Entry nodes: ['1210650700', '1146570357', '95367752#1-AddedOnRampNode', 'J8']
+Exit nodes: ['461173094-AddedOffRampNode', '4449522588', '839842702-AddedOffRampNode', 'J9']
 
 ### Entry and exit nodes of Nó do Continente:
 Entry nodes: ['1147305122', '2070590395', '269351989', '685276223']

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+	<flow id="flow_car_1210650700" type="vtype_car" begin="0.00" end="86400.0" from="118005645#1-AddedOnRampEdge" to="703196298" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_1210650700" type="vtype_truck" begin="0.00" end="86400.0" from="118005645#1-AddedOnRampEdge" to="703196298" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_1146570357" type="vtype_car" begin="0.00" end="86400.0" from="405899851" to="460986053-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_1146570357" type="vtype_truck" begin="0.00" end="86400.0" from="405899851" to="460986053-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_95367752#1-AddedOnRampNode" type="vtype_car" begin="0.00" end="86400.0" from="95367752#1" to="95367752#1-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_95367752#1-AddedOnRampNode" type="vtype_truck" begin="0.00" end="86400.0" from="95367752#1" to="95367752#1-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.10" />
+	<flow id="flow_car_J8" type="vtype_car" begin="0.00" end="86400.0" from="E4" to="474423788-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.20" />
+	<flow id="flow_truck_J8" type="vtype_truck" begin="0.00" end="86400.0" from="E4" to="474423788-AddedOffRampEdge" departPos="free" departSpeed="max" probability="0.10" />
+</routes>

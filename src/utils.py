@@ -78,12 +78,12 @@ def get_free_variables(free_variables_file):
     with open(free_variables_file, 'r') as f:
         content = f.read()
 
-        pattern = r"### Free variables of (.+?): (\[.+?\])\nInequality constraint matrix of [^:]+: (\[\[.*?\]\])\nInequality constraint vector of [^:]+: (\[.+?\])\nXparticular vector of [^:]+: (\[\[.*?\]\])\nXnull matrix of [^:]+: (\[\[.*?\]\])"
+        pattern = r"### Free variables of (.+?): (\[.+?\])\nInequality constraint matrix of [^:]+: (\[\[.*?\]\])\nInequality constraint vector of [^:]+: (\[.+?\])\nXparticular vector of [^:]+: (\[\[.*?\]\])\nXnull matrix of [^:]+: (\[\[.*?\]\])\nEquation variables of [^:]+: (\[.+?\])"
         matches = re.findall(pattern, content, re.DOTALL)
-        results = [(network_name, eval(free_vars), eval(ic_matrix), eval(ic_vector), eval(x_particular), eval(x_null)) for network_name, free_vars, ic_matrix, ic_vector, x_particular, x_null in matches]
+        results = [(network_name, eval(free_vars), eval(ic_matrix), eval(ic_vector), eval(x_particular), eval(x_null), eval(eq_vars)) for network_name, free_vars, ic_matrix, ic_vector, x_particular, x_null, eq_vars in matches]
 
         for match in results:
-            free_variables[match[0]] = (match[1], match[2], match[3], match[4], match[5])
+            free_variables[match[0]] = (match[1], match[2], match[3], match[4], match[5], match[6])
 
     return free_variables
 

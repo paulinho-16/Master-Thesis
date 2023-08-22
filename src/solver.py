@@ -96,10 +96,13 @@ if __name__ == '__main__':
                     if len(free_variables) != num_free_variables:
                         raise Exception(f"Number of free variables ({len(free_variables)}) is not equal to 'num_variables - num_equations' ({num_free_variables})")
                     
+                    variables = sorted(list(variables), key=lambda x: int(x[1:]))
+
                     fv.write(f'### Free variables of {node_name}: {list(free_variables.keys())}\n')
                     fv.write(f'Inequality constraint matrix of {node_name}: {A_ub}\n')
                     fv.write(f'Inequality constraint vector of {node_name}: {b_ub}\n')
                     fv.write(f'Xparticular vector of {node_name}: {Xparticular}\n')
                     fv.write(f'Xnull matrix of {node_name}: {Xnull}\n')
+                    fv.write(f'Equation variables of {node_name}: {variables}\n')
                     if i != len(lines) - 1: fv.write('\n')
                     print(f"The free variables of the equation system of node {node_name} are: {list(free_variables.keys())}")

@@ -4,7 +4,7 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 
 """
 
-import os, sys, time
+import os, re, sys, time
 import numpy as np
 import pandas as pd
 import json
@@ -107,7 +107,7 @@ def get_sensors_data(network_name, sensors, data_file):
     df_timestamp = pd.read_excel(data_file, sheet_name='timestamp').values.tolist()
     
     for sensor_id in sensors.keys():
-        sheet_name = sensor_id.replace('CH', 'X').replace(':', '_').replace('.', '_') if network_name == 'Article' else sensor_id
+        sheet_name = sensor_id.replace('CH', 'X').replace(':', '_').replace('.', '_') if network_name == 'Article' else sensor_id.replace('/', ';')
         dataframe = pd.read_excel(data_file, sheet_name=sheet_name).values.tolist()
         sensors_dfs[sensor_id] = dataframe
 
@@ -282,7 +282,9 @@ def get_possible_paths(edge_id, router_edges, network):
 
 if __name__ == '__main__':
     config = load_config()
-    network_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    # network_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    network_name, network_file = config.get('nodes', 'NODE_COIMBROES', fallback='./nodes/no_coimbroes.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+
     node_filename = network_file.split('.')[-3].split('/')[-1]
     network = sumolib.net.readNet(network_file)
 
@@ -477,12 +479,20 @@ if __name__ == '__main__':
                         speed = sum(v_calib) / x
                         traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, vehsPerHour, speed, veh_type, calib_routes[calib_id], departLane='free', departSpeed='max')
                     else:
-                        var_index = free_variables_order.index(variables[calibrators[calib_id]]['root_var'])
-                        if '_car_' in calib_id:
-                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, closest_feasible_X_free_relative_error[var_index], 22.22, 'vtype_car', calib_routes[calib_id], departLane='free', departSpeed='max')
-                        elif '_truck_' in calib_id: # TODO: porquê que mete o fluxo a zero para trucks?
-                            traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', calib_routes[calib_id], departLane='free', departSpeed='max')
-                
+                        if variables[calibrators[calib_id]]['root_var'] in free_variables_order:
+                            var_index = free_variables_order.index(variables[calibrators[calib_id]]['root_var'])
+                            if '_car_' in calib_id:
+                                traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, closest_feasible_X_free_relative_error[var_index], 22.22, 'vtype_car', calib_routes[calib_id], departLane='free', departSpeed='max')
+                            elif '_truck_' in calib_id: # TODO: porquê que mete o fluxo a zero para trucks?
+                                traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', calib_routes[calib_id], departLane='free', departSpeed='max')
+                        else:
+                            var_index = free_variables[network_name][5].index(variables[calibrators[calib_id]]['root_var'])
+
+                            if '_car_' in calib_id:
+                                traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, Xcomplete[var_index], 22.22, 'vtype_car', calib_routes[calib_id], departLane='free', departSpeed='max')
+                            elif '_truck_' in calib_id: # TODO: porquê que mete o fluxo a zero para trucks?
+                                traci.calibrator.setFlow(calib_id, step * step_length, (step * step_length) + 60, 0, 22.22, 'vtype_truck', calib_routes[calib_id], departLane='free', departSpeed='max')
+
                 current_min += 1
 
                 # TODO: for each SUMO router, calculate the route distribution probabilities on its bifurcations
@@ -551,9 +561,9 @@ if __name__ == '__main__':
                     # TODO: for each distribution, dinamically assign routes to the vehicles according to the probability distribution model -> done
                     for router in routers.keys():
                         edgeStartPlusOne = routers[router][2] # TODO: qual a edgeStart a enviar? Para já envio a edge do router
-                        incoming_edges = network.getEdge(edgeStartPlusOne).getFromNode().getIncoming()
-                        if len(incoming_edges) != 1:
-                            raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
+                        # incoming_edges = network.getEdge(edgeStartPlusOne).getFromNode().getIncoming()
+                        # if len(incoming_edges) != 1:
+                        #     raise Exception(f"Router {router}'s edge {edgeStartPlusOne} has more than one incoming edge. Please adapt the network so that it has only one incoming edge.")
                         temp_dists[router], perm_dists[router] = fn.routingDinamically(edgeStartPlusOne, temp_dists[router], perm_dists[router], edgeStartPlusOne, time_clean, sim_time, vehIDs_all)
 
                     vehIDs_all = []

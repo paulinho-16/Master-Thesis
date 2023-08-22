@@ -85,13 +85,15 @@ def gen_coverage(df, network, network_article):
 
             x, y = convert_coords_to_SUMO(network, coords) if network_name == 'VCI' else convert_coords_to_SUMO(network_article, coords)
             try:
-                edge_id = get_closest_edge(network, x, y, radius) if network_name == 'VCI' else get_closest_lane(network_article, x, y, radius)
+                # edge_id = get_closest_edge(network, x, y, radius) if network_name == 'VCI' else get_closest_lane(network_article, x, y, radius)
+                edge_id = get_closest_lane(network, x, y, radius) if network_name == 'VCI' else get_closest_lane(network_article, x, y, radius)
             except Exception:
                 print(f"No edges found within radius for the coordinates {coords}!")
                 continue
 
             # define the edges whose flow is determined by the detector
-            edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
+            # edge = network.getEdge(edge_id) if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
+            edge = network.getLane(edge_id).getEdge() if network_name == 'VCI' else network_article.getLane(edge_id).getEdge()
             coverage += f'\n### Edges covered by sensor {sensor} ({edge_id}):\n'
             coverage += f'{edge.getID()}\n'
 
@@ -246,11 +248,12 @@ def prepare_data():
 if __name__ == '__main__':
     config = load_config()
     df = pd.read_excel(config.get('sensors', 'LOCATIONS', fallback='./data/sensor_locations.xlsx'))
-    network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
+    # network = sumolib.net.readNet(config.get('sumo', 'NETWORK', fallback='./sumo/vci.net.xml'))
     network_article = sumolib.net.readNet(config.get('nodes', 'NODE_ARTICLE', fallback='Article,./nodes/no_artigo.net.xml').split(',')[1])
+    network_coimbroes = sumolib.net.readNet(config.get('nodes', 'NODE_COIMBROES', fallback='Nó de Coimbroes,./nodes/no_coimbroes.net.xml').split(',')[1])
     entries_exits_file = config.get('nodes', 'ENTRIES_EXITS', fallback='./nodes/entries_exits.md')
 
-    gen_coverage(df, network, network_article)
+    gen_coverage(df, network_coimbroes, network_article)
 
     with open(entries_exits_file, 'w') as eef:
         for var, value in list(config.items('nodes')):

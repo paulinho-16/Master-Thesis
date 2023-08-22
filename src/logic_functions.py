@@ -152,6 +152,7 @@ def restrictedFreeVarRange(variables_values, free_variables_order, free_variable
 
 def routingDinamically(edgeStart, temp_obj_dist, perm_obj_dist, edgeStart_id, time_clean, sim_time, vehIDs_all):
     currentVehIDs = traci.edge.getLastStepVehicleIDs(edgeStart)
+
     for obj1 in list(temp_obj_dist):
         if len(temp_obj_dist[0]) != 0:
             for veh in list(obj1[0]):
