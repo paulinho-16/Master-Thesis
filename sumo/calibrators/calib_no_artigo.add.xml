@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
 	<route id="route_calib_E10" edges="E10 E10.25 E10.138 EN2 ES_N1 ES_N2 ES_N3 ES_N4 ES_N5 ES_N6 ES_N7 ES_N8 ES_N9 ES_N10" />
-	<calibrator id="calib_car_J34" vTypes="vtype_car" edge="E10" pos="89.86" jamThreshold="0.5" output="./output/calibrator_car_J34.xml">
+	<calibrator id="calib_car_J34" vTypes="vtype_car" edge="E10.25" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J34.xml">
 		<flow begin="0" end="60" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -1443,7 +1443,7 @@
 		<flow begin="86280" end="86340" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_J34" vTypes="vtype_truck" edge="E10" pos="89.86" jamThreshold="0.5" output="./output/calibrator_truck_J34.xml">
+	<calibrator id="calib_truck_J34" vTypes="vtype_truck" edge="E10.25" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J34.xml">
 		<flow begin="0" end="60" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -2886,7 +2886,7 @@
 		<flow begin="86340" end="86400" route="route_calib_E10" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_E12" edges="E12 E11 E11.196 E7 SE5 SN_E1 SN_E2 SN_E3 SN_E4 SN_E5 SN_E6 SN_E7 SN_E8 SN_E9" />
-	<calibrator id="calib_car_J38" vTypes="vtype_car" edge="E12" pos="103.55" jamThreshold="0.5" output="./output/calibrator_car_J38.xml">
+	<calibrator id="calib_car_J38" vTypes="vtype_car" edge="E11" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J38.xml">
 		<flow begin="0" end="60" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -4328,7 +4328,7 @@
 		<flow begin="86280" end="86340" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_J38" vTypes="vtype_truck" edge="E12" pos="103.55" jamThreshold="0.5" output="./output/calibrator_truck_J38.xml">
+	<calibrator id="calib_truck_J38" vTypes="vtype_truck" edge="E11" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J38.xml">
 		<flow begin="0" end="60" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -5771,7 +5771,7 @@
 		<flow begin="86340" end="86400" route="route_calib_E12" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_ES_N56_onramp1.299" edges="ES_N56_onramp1.299 ES_N56_onramp1 ES_N56_onramp1.90 ES_N57_onramp1 ES_N57_onramp1.140 ES_N12 ES_N13 ES_N14 ES_N15 ES_N16 ES_N17 ES_N18" />
-	<calibrator id="calib_car_J344" vTypes="vtype_car" edge="ES_N56_onramp1.299" pos="119.86" jamThreshold="0.5" output="./output/calibrator_car_J344.xml">
+	<calibrator id="calib_car_J344" vTypes="vtype_car" edge="ES_N56_onramp1" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J344.xml">
 		<flow begin="0" end="60" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -7213,7 +7213,7 @@
 		<flow begin="86280" end="86340" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_J344" vTypes="vtype_truck" edge="ES_N56_onramp1.299" pos="119.86" jamThreshold="0.5" output="./output/calibrator_truck_J344.xml">
+	<calibrator id="calib_truck_J344" vTypes="vtype_truck" edge="ES_N56_onramp1" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J344.xml">
 		<flow begin="0" end="60" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -8656,7 +8656,7 @@
 		<flow begin="86340" end="86400" route="route_calib_ES_N56_onramp1.299" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_E_NS1" edges="E_NS1 E_NS2 E_NS3 E_NS4 E_NS5 E_NS6 E_NS7 E_NS8" />
-	<calibrator id="calib_car_287314139" vTypes="vtype_car" edge="E_NS1" pos="251.74" jamThreshold="0.5" output="./output/calibrator_car_287314139.xml">
+	<calibrator id="calib_car_287314139" vTypes="vtype_car" edge="E_NS2" pos="0" jamThreshold="0.5" output="./output/calibrator_car_287314139.xml">
 		<flow begin="0" end="60" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -10098,7 +10098,7 @@
 		<flow begin="86280" end="86340" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_287314139" vTypes="vtype_truck" edge="E_NS1" pos="251.74" jamThreshold="0.5" output="./output/calibrator_truck_287314139.xml">
+	<calibrator id="calib_truck_287314139" vTypes="vtype_truck" edge="E_NS2" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_287314139.xml">
 		<flow begin="0" end="60" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -11541,7 +11541,7 @@
 		<flow begin="86340" end="86400" route="route_calib_E_NS1" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_N_ES146" edges="N_ES146 N_ES147 N_ES148 N_ES149 N_ES150" />
-	<calibrator id="calib_car_J332" vTypes="vtype_car" edge="N_ES146" pos="141.17" jamThreshold="0.5" output="./output/calibrator_car_J332.xml">
+	<calibrator id="calib_car_J332" vTypes="vtype_car" edge="N_ES147" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J332.xml">
 		<flow begin="0" end="60" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -12983,7 +12983,7 @@
 		<flow begin="86280" end="86340" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_J332" vTypes="vtype_truck" edge="N_ES146" pos="141.17" jamThreshold="0.5" output="./output/calibrator_truck_J332.xml">
+	<calibrator id="calib_truck_J332" vTypes="vtype_truck" edge="N_ES147" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J332.xml">
 		<flow begin="0" end="60" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -14426,7 +14426,7 @@
 		<flow begin="86340" end="86400" route="route_calib_N_ES146" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_N_ES152_onramp1.302" edges="N_ES152_onramp1.302 N_ES152_onramp1 N_ES152_onramp1.89 N_ES152_onramp1.762 N_ES152_onramp1.318 N_ES153 N_ES154 N_ES155 N_ES156 N_ES157 N_ES158 N_ES159 N_ES160" />
-	<calibrator id="calib_car_J346" vTypes="vtype_car" edge="N_ES152_onramp1.302" pos="121.21" jamThreshold="0.5" output="./output/calibrator_car_J346.xml">
+	<calibrator id="calib_car_J346" vTypes="vtype_car" edge="N_ES152_onramp1" pos="0" jamThreshold="0.5" output="./output/calibrator_car_J346.xml">
 		<flow begin="0" end="60" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -15868,7 +15868,7 @@
 		<flow begin="86280" end="86340" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_J346" vTypes="vtype_truck" edge="N_ES152_onramp1.302" pos="121.21" jamThreshold="0.5" output="./output/calibrator_truck_J346.xml">
+	<calibrator id="calib_truck_J346" vTypes="vtype_truck" edge="N_ES152_onramp1" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_J346.xml">
 		<flow begin="0" end="60" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
@@ -17311,7 +17311,7 @@
 		<flow begin="86340" end="86400" route="route_calib_N_ES152_onramp1.302" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_S_NE11" edges="S_NE11 S_NE12 S_NE13" />
-	<calibrator id="calib_car_497734" vTypes="vtype_car" edge="S_NE11" pos="232.08" jamThreshold="0.5" output="./output/calibrator_car_497734.xml">
+	<calibrator id="calib_car_497734" vTypes="vtype_car" edge="S_NE12" pos="0" jamThreshold="0.5" output="./output/calibrator_car_497734.xml">
 		<flow begin="0" end="60" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -18753,7 +18753,7 @@
 		<flow begin="86280" end="86340" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_497734" vTypes="vtype_truck" edge="S_NE11" pos="232.08" jamThreshold="0.5" output="./output/calibrator_truck_497734.xml">
+	<calibrator id="calib_truck_497734" vTypes="vtype_truck" edge="S_NE12" pos="0" jamThreshold="0.5" output="./output/calibrator_truck_497734.xml">
 		<flow begin="0" end="60" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_S_NE11" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />

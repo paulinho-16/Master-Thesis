@@ -4,7 +4,7 @@ This script contains all the logic of the VCI Digital Twin, running the simulati
 
 """
 
-import os, re, sys, time
+import os, sys, time
 import numpy as np
 import pandas as pd
 import json
@@ -165,21 +165,48 @@ def get_flow_edges(entry_node, routers, network):
             router_found = True
         to_edge = next_edge
     
+    if len(network.getEdge(to_edge).getOutgoing()) == 1 and len(next(iter(network.getEdge(to_edge).getOutgoing())).getIncoming()) == 1:
+        to_edge = next(iter(network.getEdge(to_edge).getOutgoing())).getID() # if possible, end the flow at the edge after the router
+    
     return from_edge, to_edge
 
-def get_counting_edge(initial_edge):
+def get_counting_edges(initial_edge, sensors_edges):
     following_edges = list(initial_edge.getOutgoing().keys())
+    start_edge = next_edge = None
 
     while len(following_edges) == 1:
         incoming_edges = list(following_edges[0].getIncoming().keys())
         if len(incoming_edges) > 1:
             break
 
-        start_edge = incoming_edges[0]
-        next_edge = following_edges[0]
+        if (not start_edge and not next_edge) or (start_edge.getLength() < 150 or incoming_edges[0].getLength() > 150): # avoid short edges for counting
+            start_edge = incoming_edges[0]
+            next_edge = following_edges[0]
+        if following_edges[0].getID() in sensors_edges: # prioritize the counting of vehicles on edges covered by sensors
+            start_edge = incoming_edges[0]
+            next_edge = following_edges[0]
+            break
+
         following_edges = list(following_edges[0].getOutgoing().keys())
 
+    if not start_edge or not next_edge:
+        raise Exception(f"Could not find start_edge and next_edge for entry on edge {initial_edge.getID()}.")
+
     return start_edge, next_edge
+
+def get_splitting_edge(router_edge):
+    following_edges = list(router_edge.getOutgoing().keys())
+    splitting_edge = router_edge
+
+    while len(following_edges) == 1:
+        incoming_edges = list(following_edges[0].getIncoming().keys())
+        if len(incoming_edges) > 1:
+            break
+
+        splitting_edge = following_edges[0]
+        following_edges = list(following_edges[0].getOutgoing().keys())
+
+    return splitting_edge
 
 def generate_calibrators(calibrators_file, entry_nodes, routers, network):
     additional_tag = ET.Element('additional')
@@ -190,8 +217,11 @@ def generate_calibrators(calibrators_file, entry_nodes, routers, network):
         output_file_car = f'{output_dir}/calibrator_car_{entry}.xml'
         output_file_truck = f'{output_dir}/calibrator_truck_{entry}.xml'
         entry_edge = entry_node.getOutgoing()[0]
-        calib_pos = entry_edge.getLength()
-
+        calibrator_edge = next(iter(entry_edge.getOutgoing())) # for the calibrator location, select the beggining of the second edge of the entry
+        if len(entry_edge.getOutgoing()) != 1 and len(calibrator_edge.getIncoming()) != 1:
+            raise Exception(f"The entry of node {entry} does not have at least two continuation edges. Please adapt the network.")
+        calib_pos = 0
+    
         # define the route for the calibrator
         router_edges = [routers[router][2] for router in routers]
         paths = get_possible_paths(entry_edge.getID(), router_edges, network)
@@ -201,8 +231,8 @@ def generate_calibrators(calibrators_file, entry_nodes, routers, network):
         route_name = f'route_calib_{entry_edge.getID()}'
         ET.SubElement(additional_tag, 'route', id=route_name, edges=route)
 
-        calib_car_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry}', vTypes='vtype_car', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
-        calib_truck_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry}', vTypes='vtype_truck', edge=entry_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
+        calib_car_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_car_{entry}', vTypes='vtype_car', edge=calibrator_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_car)
+        calib_truck_tag = ET.SubElement(additional_tag, 'calibrator', id=f'calib_truck_{entry}', vTypes='vtype_truck', edge=calibrator_edge.getID(), pos=str(calib_pos), jamThreshold='0.5', output=output_file_truck)
 
         for begin_time in range(0, 86400, 60):
             end_time = begin_time + 60
@@ -224,6 +254,7 @@ def generate_flows(flows_file, entry_nodes, routers, network):
     for entry in entry_nodes:
         entry_node = network.getNode(entry)
         from_edge, to_edge = get_flow_edges(entry_node, routers, network)
+
         ET.SubElement(routes_tag, 'flow', id=f'flow_car_{entry_node.getID()}', type='vtype_car', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.20')
         ET.SubElement(routes_tag, 'flow', id=f'flow_truck_{entry_node.getID()}', type='vtype_truck', begin='0.00', end='86400.0', **{'from': from_edge}, to=to_edge, departPos='free', departSpeed='max', probability='0.10')
 
@@ -263,6 +294,8 @@ def get_possible_paths(edge_id, router_edges, network):
 
         # check if we reached the end of a route: a network exit or another router edge
         if len(current_edge.getOutgoing()) == 0 or (current_edge.getID() in router_edges and current_edge.getID() != edge_id):
+            if len(current_edge.getOutgoing()) == 1 and len(next(iter(current_edge.getOutgoing())).getIncoming()) == 1:
+                path.append(next(iter(current_edge.getOutgoing()))) # end the route at the edge after the router if possible
             paths.append(' '.join([edge.getID() for edge in path]))
             path.pop()
             visited.remove(current_edge)
@@ -282,8 +315,8 @@ def get_possible_paths(edge_id, router_edges, network):
 
 if __name__ == '__main__':
     config = load_config()
-    # network_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
-    network_name, network_file = config.get('nodes', 'NODE_COIMBROES', fallback='./nodes/no_coimbroes.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    network_name, network_file = config.get('nodes', 'NODE_ARTICLE', fallback='./nodes/no_artigo.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
+    # network_name, network_file = config.get('nodes', 'NODE_COIMBROES', fallback='./nodes/no_coimbroes.net.xml').split(',') # TODO: set the node that we want to analyse in the Makefile
 
     node_filename = network_file.split('.')[-3].split('/')[-1]
     network = sumolib.net.readNet(network_file)
@@ -375,14 +408,14 @@ if __name__ == '__main__':
                 new_veh_ids = {} # node : [vehIDs]
 
                 for node in entry_nodes:
-                    start_edge, next_edge = get_counting_edge(network.getNode(node).getOutgoing()[0])
+                    start_edge, next_edge = get_counting_edges(network.getNode(node).getOutgoing()[0], sensors_edges)
                     flow, speed, oldVehIDs[node], new_veh_ids[node] = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
                 # TODO: update the flow out variables for each exit on the network -> done
                 for node in exit_nodes:
-                    next_edge = network.getNode(node).getIncoming()[0]
-                    start_edge = next_edge.getFromNode().getIncoming()[0]
+                    next_edge = network.getNode(node).getIncoming()[0] # select the exit edge as the next_edge
+                    start_edge = next_edge.getFromNode().getIncoming()[0] # select the edge before the exit edge as the start_edge
                     flow, speed, oldVehIDs[node], _ = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
@@ -506,7 +539,8 @@ if __name__ == '__main__':
 
                     prob_dists[router] = {}
                     if var_value != 0:
-                        split_edges = list(network.getEdge(routers[router][2]).getOutgoing().keys())
+                        splitting_edge = get_splitting_edge(network.getEdge(routers[router][2]))
+                        split_edges = list(splitting_edge.getOutgoing().keys())
                         if len(split_edges) != 2: # TODO: como lidar com casos em que a edge se divide em mais do que duas?
                             raise Exception(f"Router {router} in split with more than 2 outgoing edges. Please adapt the network so that each split has only 2 outgoing edges.")
                         
@@ -538,6 +572,7 @@ if __name__ == '__main__':
                         # TODO: append new vehicles on the network entries, route distributions, and simulation time to each array -> done
                         for router in routers.keys():
                             temp_dists[router].append([total_veh_ids, [r_dists[router]], [sim_time]])
+
                     else:
                         # TODO: for each router, check if new vehicles entered the network, and if so, append to the permanent distribution array -> done
                         for router in routers.keys():
@@ -545,7 +580,7 @@ if __name__ == '__main__':
                                 perm_dists[router].append(temp_dists[router][0])
                             temp_dists[router] = []
                             temp_dists[router].append([total_veh_ids, [r_dists[router]], [sim_time]])
-                
+
                 # TODO: for each new vehicle inserted in each entry, append it to the temporary array of each distribution -> done
                 for veh_list in new_veh_ids.values():
                     for veh_id in veh_list:

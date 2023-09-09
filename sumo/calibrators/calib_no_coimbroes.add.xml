@@ -2886,7 +2886,7 @@
 		<flow begin="86340" end="86400" route="route_calib_118005645#1-AddedOnRampEdge" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 	</calibrator>
 	<route id="route_calib_405899851" edges="405899851 405899851.512 460986053 460986053-AddedOffRampEdge" />
-	<calibrator id="calib_car_1146570357" vTypes="vtype_car" edge="405899851" pos="511.92" jamThreshold="0.5" output="./output/calibrator_car_1146570357.xml">
+	<calibrator id="calib_car_1146570357" vTypes="vtype_car" edge="405899851" pos="512.07" jamThreshold="0.5" output="./output/calibrator_car_1146570357.xml">
 		<flow begin="0" end="60" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
@@ -4328,7 +4328,7 @@
 		<flow begin="86280" end="86340" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 		<flow begin="86340" end="86400" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_car" departPos="random_free" departSpeed="max" />
 	</calibrator>
-	<calibrator id="calib_truck_1146570357" vTypes="vtype_truck" edge="405899851" pos="511.92" jamThreshold="0.5" output="./output/calibrator_truck_1146570357.xml">
+	<calibrator id="calib_truck_1146570357" vTypes="vtype_truck" edge="405899851" pos="512.07" jamThreshold="0.5" output="./output/calibrator_truck_1146570357.xml">
 		<flow begin="0" end="60" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="60" end="120" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />
 		<flow begin="120" end="180" route="route_calib_405899851" vehsPerHour="180" speed="27.78" type="vtype_truck" departPos="random_free" departSpeed="max" />

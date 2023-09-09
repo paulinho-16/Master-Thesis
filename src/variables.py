@@ -122,10 +122,11 @@ def process(network_name, process_list, variables, equations, variable_count, ro
             equation = f'{splitting_variable} = ' + ' + '.join([variables[f_edge.getID()]['root_var'] for f_edge in conn_outgoing])
             equations.add(equation)
 
-            # place a router on the split edge if not already placed
-            if edge.getID() not in routers: # TODO: colocar routers nos casos de nós complexos também?
-                gen_pinpoint(edge, f'router_{router_count}', 'router', 'green', additional_tag)
-                routers[edge.getID()] = f'router_{router_count}'
+            # place a router if not already placed, if possible at the edge preceding the splitting edge
+            router_edge = next(iter(edge.getIncoming())) if len(edge.getIncoming()) == 1 and len(next(iter(edge.getIncoming())).getOutgoing()) == 1 else edge
+            if router_edge.getID() not in routers: # TODO: colocar routers nos casos de nós complexos também?
+                gen_pinpoint(router_edge, f'router_{router_count}', 'router', 'green', additional_tag)
+                routers[router_edge.getID()] = f'router_{router_count}'
                 router_count += 1
 
         elif len(conn_incoming) > 1 and len(conn_outgoing) == 1: # case of a merging junction, analyse if it can be processable

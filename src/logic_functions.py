@@ -167,7 +167,7 @@ def routingDinamically(edgeStart, temp_obj_dist, perm_obj_dist, edgeStart_id, ti
                                 right_router = True
                             if right_router:
                                 traci.vehicle.setRouteID(vehID, route_dist)
-                                obj1[0].remove(veh)
+                                # obj1[0].remove(veh)
 
     for obj1 in list(perm_obj_dist):
         if len(obj1[0]) != 0:
@@ -183,7 +183,7 @@ def routingDinamically(edgeStart, temp_obj_dist, perm_obj_dist, edgeStart_id, ti
                                 right_router = True
                             if right_router:
                                 traci.vehicle.setRouteID(vehID, route_dist)
-                                obj1[0].remove(veh)
+                                # obj1[0].remove(veh)
 
     if sim_time % time_clean == 0:
         for obj1 in list(perm_obj_dist):
