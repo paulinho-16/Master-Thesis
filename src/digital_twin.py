@@ -194,6 +194,25 @@ def get_counting_edges(initial_edge, sensors_edges):
 
     return start_edge, next_edge
 
+def get_counting_edges_exits(initial_edge, sensors_edges):
+    previous_edges = list(initial_edge.getIncoming().keys())
+    start_edge = initial_edge.getFromNode().getIncoming()[0]
+    next_edge = initial_edge
+
+    while len(previous_edges) == 1:
+        outgoing_edges = list(previous_edges[0].getOutgoing().keys())
+        if len(outgoing_edges) > 1:
+            break
+
+        if previous_edges[0].getToNode().getOutgoing()[0].getID() in sensors_edges: # prioritize the counting of vehicles on edges covered by sensors
+            start_edge = previous_edges[0]
+            next_edge = previous_edges[0].getToNode().getOutgoing()[0]
+            break
+
+        previous_edges = list(previous_edges[0].getIncoming().keys())
+
+    return start_edge, next_edge
+
 def get_splitting_edge(router_edge):
     following_edges = list(router_edge.getOutgoing().keys())
     splitting_edge = router_edge
@@ -286,10 +305,8 @@ def generate_routes(routes_file, routers, network):
 
 def get_possible_paths(edge_id, router_edges, network):
     paths = []
-    visited = set()
 
     def dfs(current_edge, path):
-        visited.add(current_edge)
         path.append(current_edge)
 
         # check if we reached the end of a route: a network exit or another router edge
@@ -298,15 +315,10 @@ def get_possible_paths(edge_id, router_edges, network):
                 path.append(next(iter(current_edge.getOutgoing()))) # end the route at the edge after the router if possible
             paths.append(' '.join([edge.getID() for edge in path]))
             path.pop()
-            visited.remove(current_edge)
             return
 
         for successor_edge in current_edge.getOutgoing():
-            if successor_edge not in visited:
-                dfs(successor_edge, path)
-
-        path.pop()
-        visited.remove(current_edge)
+            dfs(successor_edge, path.copy())
 
     start_edge = network.getEdge(edge_id)
     dfs(start_edge, [])
@@ -414,8 +426,7 @@ if __name__ == '__main__':
 
                 # TODO: update the flow out variables for each exit on the network -> done
                 for node in exit_nodes:
-                    next_edge = network.getNode(node).getIncoming()[0] # select the exit edge as the next_edge
-                    start_edge = next_edge.getFromNode().getIncoming()[0] # select the edge before the exit edge as the start_edge
+                    start_edge, next_edge = get_counting_edges_exits(network.getNode(node).getIncoming()[0], sensors_edges) # select edges with sensors closest to the exits
                     flow, speed, oldVehIDs[node], _ = fn.edgeVehParameters(start_edge.getID(), next_edge.getID(), oldVehIDs[node])
                     flow_speed_min[node] = (flow_speed_min[node][0], flow_speed_min[node][1] + flow, flow_speed_min[node][2] + speed) # TODO: somar speed porquê?
 
@@ -630,7 +641,8 @@ if __name__ == '__main__':
                 df.to_excel(f'{results_dir}/flow_{save_data_time}.xlsx', index=False)
                 controlFile = np.zeros((1, len(oldVehIDs) * 2 + 1))
                 current_hour += 1
-                current_day += current_hour // 24
+                if current_hour % 24 == 0:
+                    current_day = current_hour // 24
 
             step += 1
 

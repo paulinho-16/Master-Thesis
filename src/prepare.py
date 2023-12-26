@@ -182,20 +182,20 @@ def prepare_data():
                                 grouped_c = df_direction_c.groupby(['vehicle_type', pd.Grouper(freq='1T')])
 
                                 result_sheet_c = pd.DataFrame({
-                                    'carFlows': grouped_c[count_id_col].count()['car'],
-                                    'carSpeeds': grouped_c[speed_col].mean()['car'],
-                                    'truckFlows': grouped_c[count_id_col].count()['truck'],
-                                    'truckSpeeds': grouped_c[speed_col].mean()['truck']
+                                    'carFlows': grouped_c[count_id_col].count()['car'] * 60,
+                                    'carSpeeds': grouped_c[speed_col].mean()['car'] * 60,
+                                    'truckFlows': grouped_c[count_id_col].count()['truck'] * 60,
+                                    'truckSpeeds': grouped_c[speed_col].mean()['truck'] * 60
                                 })
 
                                 # Group and calculate for direction D
                                 grouped_d = df_direction_d.groupby(['vehicle_type', pd.Grouper(freq='1T')])
 
                                 result_sheet_d = pd.DataFrame({
-                                    'carFlows': grouped_d[count_id_col].count()['car'],
-                                    'carSpeeds': grouped_d[speed_col].mean()['car'],
-                                    'truckFlows': grouped_d[count_id_col].count()['truck'],
-                                    'truckSpeeds': grouped_d[speed_col].mean()['truck']
+                                    'carFlows': grouped_d[count_id_col].count()['car'] * 60,
+                                    'carSpeeds': grouped_d[speed_col].mean()['car'] * 60,
+                                    'truckFlows': grouped_d[count_id_col].count()['truck'] * 60,
+                                    'truckSpeeds': grouped_d[speed_col].mean()['truck'] * 60
                                 })
 
                                 # Combine the results into separate dataframes
