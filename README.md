@@ -1,5 +1,7 @@
 # Master Thesis
 
+## *A Modelling Methodology Towards Automated Generation of Road Network Digital Twins*
+
 This repository contains the source code, documentation, and additional resources related to my Master's Thesis, developed for the Informatics and Computing Engineering (MEIC) course at the Faculty of Engineering of the University of Porto (FEUP).
 
 This thesis was developed during the 5<sup>th</sup> year - 2<sup>nd</sup> semester and took place during the 2022/23 season.
